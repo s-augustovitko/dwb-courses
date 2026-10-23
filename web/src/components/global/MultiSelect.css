@@ -1,0 +1,104 @@
+.multi-select {
+  display: block;
+}
+
+.multi-select.is-primary {
+  --ms-h: var(--bulma-primary-h);
+  --ms-s: var(--bulma-primary-s);
+  --ms-l: var(--bulma-primary-l);
+}
+.multi-select.is-link {
+  --ms-h: var(--bulma-link-h);
+  --ms-s: var(--bulma-link-s);
+  --ms-l: var(--bulma-link-l);
+}
+.multi-select.is-success {
+  --ms-h: var(--bulma-success-h);
+  --ms-s: var(--bulma-success-s);
+  --ms-l: var(--bulma-success-l);
+}
+.multi-select.is-warning {
+  --ms-h: var(--bulma-warning-h);
+  --ms-s: var(--bulma-warning-s);
+  --ms-l: var(--bulma-warning-l);
+}
+.multi-select.is-danger {
+  --ms-h: var(--bulma-danger-h);
+  --ms-s: var(--bulma-danger-s);
+  --ms-l: var(--bulma-danger-l);
+}
+.multi-select.is-dark {
+  --ms-h: var(--bulma-dark-h);
+  --ms-s: var(--bulma-dark-s);
+  --ms-l: var(--bulma-dark-l);
+}
+.multi-select.is-light {
+  --ms-h: var(--bulma-light-h);
+  --ms-s: var(--bulma-light-s);
+  --ms-l: var(--bulma-light-l);
+}
+
+.multi-select .dropdown-trigger,
+.multi-select .dropdown-menu {
+  width: 100%;
+}
+
+.dropdown-trigger .tags.multi-select-tags {
+  flex: 1 1 auto;
+  margin-bottom: 0px;
+}
+
+.multi-select-placeholder {
+  color: var(--bulma-text-weak);
+}
+
+.multi-select-options {
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.multi-select-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.multi-select-option input[type="checkbox"] {
+  accent-color: hsl(var(--ms-h), var(--ms-s), var(--ms-l));
+}
+
+.multi-select-option.is-selected,
+.multi-select-option:hover {
+  background-color: hsl(var(--ms-h), var(--ms-s), 97%);
+  color: hsl(var(--ms-h), var(--ms-s), var(--ms-l));
+}
+
+.multi-select-option:has(input[type="checkbox"]:disabled) {
+  color: var(--bulma-text-weak);
+  cursor: not-allowed;
+}
+
+.multi-select .dropdown-trigger > .input {
+  height: auto;
+  min-height: 2.5em;
+  min-width: 0;
+}
+
+.dropdown-trigger .tags.multi-select-tags {
+  min-width: 0;
+}
+
+.multi-select-tags .tag {
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.multi-select-option span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}

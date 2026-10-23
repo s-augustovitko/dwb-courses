@@ -1,0 +1,13 @@
+FROM docker.io/library/golang:1.26-alpine
+
+RUN apk add build-base
+
+RUN go install github.com/air-verse/air@latest
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+COPY local/.air.toml ./
+RUN go mod download
+
+CMD ["air"]

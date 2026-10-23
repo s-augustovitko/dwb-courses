@@ -1,0 +1,27 @@
+[Unit]
+Description=Litestream replication
+Requires=migrate.service
+After=migrate.service
+
+[Container]
+Image={{ litestream_image }}
+Exec=replicate
+EnvironmentFile=%h/app/secrets/litestream.env
+Volume=%h/infra/litestream.yml:/etc/litestream.yml:ro
+Volume=%h/app/data:/data
+Network=dwb.network
+UserNS=keep-id:uid=1001,gid=1001
+User=1001
+ReadOnly=true
+NoNewPrivileges=true
+DropCapability=ALL
+PodmanArgs={{ podman_args.litestream }}
+# Final WAL push
+StopTimeout=40
+
+[Service]
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

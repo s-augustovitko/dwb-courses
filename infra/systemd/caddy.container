@@ -1,0 +1,21 @@
+[Unit]
+Description=Caddy
+
+[Container]
+Image=localhost/dwb-courses-web:current
+EnvironmentFile=%h/app/secrets/caddy.env
+Volume=caddy_data:/data
+# Host network keeps the real client IP, a published port would hide it
+Network=host
+ReadOnly=true
+NoNewPrivileges=true
+DropCapability=ALL
+AddCapability=NET_BIND_SERVICE
+PodmanArgs={{ podman_args.caddy }}
+
+[Service]
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

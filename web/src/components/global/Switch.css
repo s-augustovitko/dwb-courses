@@ -1,0 +1,103 @@
+.switch {
+  --switch-h: var(--bulma-primary-h);
+  --switch-s: var(--bulma-primary-s);
+  --switch-l: var(--bulma-primary-l);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.switch.is-link {
+  --switch-h: var(--bulma-link-h);
+  --switch-s: var(--bulma-link-s);
+  --switch-l: var(--bulma-link-l);
+}
+.switch.is-info {
+  --switch-h: var(--bulma-info-h);
+  --switch-s: var(--bulma-info-s);
+  --switch-l: var(--bulma-info-l);
+}
+.switch.is-success {
+  --switch-h: var(--bulma-success-h);
+  --switch-s: var(--bulma-success-s);
+  --switch-l: var(--bulma-success-l);
+}
+.switch.is-warning {
+  --switch-h: var(--bulma-warning-h);
+  --switch-s: var(--bulma-warning-s);
+  --switch-l: var(--bulma-warning-l);
+}
+.switch.is-danger {
+  --switch-h: var(--bulma-danger-h);
+  --switch-s: var(--bulma-danger-s);
+  --switch-l: var(--bulma-danger-l);
+}
+.switch.is-dark {
+  --switch-h: var(--bulma-dark-h);
+  --switch-s: var(--bulma-dark-s);
+  --switch-l: var(--bulma-dark-l);
+}
+.switch.is-light {
+  --switch-h: var(--bulma-light-h);
+  --switch-s: var(--bulma-light-s);
+  --switch-l: var(--bulma-light-l);
+}
+
+.switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.5em;
+  height: 1.4em;
+  border-radius: var(--bulma-radius-rounded);
+  background-color: var(--bulma-border);
+  transition: background-color var(--bulma-duration) var(--bulma-easing);
+}
+
+.switch-slider::before {
+  content: "";
+  position: absolute;
+  top: 0.2em;
+  left: 0.2em;
+  width: 1em;
+  height: 1em;
+  border-radius: var(--bulma-radius-rounded);
+  background-color: var(--bulma-white);
+  transition: transform var(--bulma-duration) var(--bulma-easing);
+}
+
+.switch input[type="checkbox"]:checked + .switch-slider {
+  background-color: hsl(var(--switch-h), var(--switch-s), var(--switch-l));
+}
+
+.switch input[type="checkbox"]:checked + .switch-slider::before {
+  transform: translateX(1.1em);
+}
+
+.switch input[type="checkbox"]:focus-visible + .switch-slider {
+  box-shadow: var(--bulma-focus-shadow-size)
+    hsla(
+      var(--bulma-focus-h),
+      var(--bulma-focus-s),
+      var(--bulma-focus-l),
+      var(--bulma-focus-shadow-alpha)
+    );
+}
+
+.switch input[type="checkbox"]:disabled + .switch-slider {
+  opacity: var(--bulma-button-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.switch input[type="checkbox"]:disabled ~ .switch-label {
+  opacity: var(--bulma-button-disabled-opacity);
+  cursor: not-allowed;
+}

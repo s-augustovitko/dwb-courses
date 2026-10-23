@@ -1,0 +1,14 @@
+# 512 MB, 1 vCPU (smallest droplet). The ceilings add up to about the RAM;
+# the measured peaks of all of them together leave about 90 MB free, and the
+# swap file absorbs the rest.
+monitor_host: monitor.137-184-97-156.sslip.io
+litestream: false
+# Idle (~70 MB) plus one 64 MiB Argon2id hash
+gomemlimit: 176MiB
+# Memory: above the peak measured under a full load test.
+# CPU: see prod.yml
+podman_args:
+  api: --memory=224m --cpu-shares=2048
+  caddy: --memory=128m --cpu-shares=1024
+  litestream: --memory=96m --cpus=0.5 --cpu-shares=512
+  dozzle: --memory=48m --cpus=0.25 --cpu-shares=256

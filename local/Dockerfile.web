@@ -1,0 +1,8 @@
+FROM docker.io/oven/bun:canary-alpine
+
+WORKDIR /app
+
+COPY package.json bun.lock tsconfig.json vite.config.ts index.html ./
+RUN bun i
+
+CMD ["bun", "run", "dev"]

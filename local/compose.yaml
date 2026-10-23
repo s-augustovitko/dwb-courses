@@ -1,0 +1,102 @@
+networks:
+  dwb:
+    driver: bridge
+
+services:
+  web:
+    build:
+      context: ../web
+      dockerfile: ../local/Dockerfile.web
+    working_dir: /app
+    environment:
+      ENV_HOST: 0.0.0.0
+      ENV_PORT: 3000
+      NODE_OPTIONS: "--max-old-space-size=256"
+    volumes:
+      # App
+      - ../web/public:/app/public:ro
+      - ../web/src:/app/src:ro
+      - ../web/index.html:/app/index.html:ro
+    restart: always
+    networks:
+      - dwb
+    healthcheck:
+      test: "wget --spider --quiet http://127.0.0.1:3000"
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  server:
+    build:
+      context: ../
+      dockerfile: local/Dockerfile.server
+    working_dir: /app
+    env_file: ../.local.env
+    environment:
+      GOMEMLIMIT: 430MiB
+      GOMAXPROCS: 2
+      CGO_ENABLED: 1
+    volumes:
+      # DB
+      - ./db_data:/data
+      # App
+      - ../cmd:/app/cmd:ro
+      - ../config:/app/config:ro
+      - ../internal:/app/internal:ro
+      # Go mod
+      - ../go.mod:/app/go.mod:ro
+      - ../go.sum:/app/go.sum:ro
+      # .air.toml
+      - ./.air.toml:/app/.air.toml:ro
+    restart: always
+    networks:
+      - dwb
+    healthcheck:
+      test: "wget --spider --quiet --header \"Host: web.localhost:3000\" http://127.0.0.1:3000/api/v1/readyz"
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  caddy:
+    image: docker.io/library/caddy:2-alpine
+    ports:
+      - "3000:3000"
+    volumes:
+      # Caddyfile
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Config & Data
+      - ./caddy_data:/data
+      - ./caddy_config:/config
+    restart: always
+    networks:
+      - dwb
+    healthcheck:
+      test: "wget --spider --quiet --header \"Host: web.localhost:3000\" https://web.localhost:3000/api/v1/readyz"
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dozzle:
+    image: docker.io/amir20/dozzle:latest
+    environment:
+      DOZZLE_ENABLE_ACTION: true
+      DOZZLE_ENABLE_SHELL: true
+      DOZZLE_NO_ANALYTICS: true
+    volumes:
+      # Runtime
+      - ${XDG_RUNTIME_DIR:-/run/user/1000}/podman/podman.sock:/var/run/docker.sock:ro
+      # Data
+      - ./dozzle_data:/data
+    restart: always
+    networks:
+      - dwb
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+          

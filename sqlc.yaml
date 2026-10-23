@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    queries: "infra/queries/*.sql"
+    schema: "infra/migrations/*.sql"
+    gen:
+      go:
+        package: "database"
+        out: "internal/database"
+        emit_empty_slices: true
+        emit_all_enum_values: true

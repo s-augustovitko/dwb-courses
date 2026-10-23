@@ -1,0 +1,106 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: all
+  disable:
+    - varnamelen
+    - ireturn
+    - wsl
+    - noinlineerr
+    # Docs
+    - godox
+    - goheader
+    # For tests
+    - paralleltest
+    - tparallel
+    - testpackage
+    # Worth enabling later
+    - err113
+    - wrapcheck
+    # Tighter control
+    - gochecknoglobals
+    - gochecknoinits
+    # Deprecated: their replacements gomodguard_v2 and exhaustruct_v5 stay enabled
+    - gomodguard
+    - exhaustruct
+
+  settings:
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+          deny:
+            - pkg: "log$"
+              desc: use github.com/rs/zerolog instead
+            - pkg: "io/ioutil$"
+              desc: deprecated since Go 1.16; use io or os instead
+
+    forbidigo:
+      forbid:
+        - pattern: '^print(ln)?$'
+        - pattern: '^fmt\.Print.*$'
+          msg: do not commit print statements; use zerolog instead
+        - pattern: '^panic$'
+          msg: do not panic in application code; return an error instead
+        - pattern: '^time\.(Now|Unix)$'
+          msg: use api.Now / api.FromUnix so times are always UTC
+
+    tagliatelle:
+      case:
+        rules:
+          json: camel
+          yaml: snake
+
+    tagalign:
+      align: false
+      sort: true
+
+    revive:
+      enable-default-rules: true
+      rules:
+        - name: package-comments
+          disabled: true
+
+  exclusions:
+    generated: strict
+    rules:
+      # Culqi's REST API uses snake_case JSON
+      - path: internal/payments/culqi/
+        linters:
+          - tagliatelle
+      - path: _test\.go
+        linters:
+          - funlen
+          - dupl
+          - gocognit
+          - gocyclo
+          - exhaustive
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
+
+  settings:
+    golines:
+      max-len: 80
+      shorten-comments: true
+
+    gci:
+      sections:
+        - standard
+        - default
+        - localmodule
+
+    gofumpt:
+      module-path: dwb-courses
+
+    goimports:
+      local-prefixes:
+        - dwb-courses

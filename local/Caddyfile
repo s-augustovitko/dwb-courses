@@ -1,0 +1,41 @@
+dozzle.localhost:3000 {
+    encode
+
+    reverse_proxy dozzle:8080 {
+        flush_interval -1
+    }
+}
+
+web.localhost:3000 {
+    encode
+
+    # Max Request body size
+    request_body {
+        max_size 4MiB
+    }
+
+    # Dont serve hidden or dot files (but allow Vite's .vite/ dep cache)
+    @hidden {
+        path */.*
+        not path /node_modules/*
+    }
+    handle @hidden {
+        respond 403
+    }
+
+    handle /api/v1/* {
+        reverse_proxy server:3000
+    }
+
+    reverse_proxy web:3000
+
+    header {
+        # style-src allows 'unsafe-inline' because Vite's dev server injects CSS as inline <style> tags for HMR
+        # frame-ancestors is 'self': Culqi never frames our page, our page frames Culqi.
+        Content-Security-Policy "default-src 'self'; script-src 'self' https://js.culqi.com https://3ds.culqi.com https://checkout.culqi.com; frame-src https://*.culqi.com; connect-src 'self' https://*.culqi.com; img-src 'self' data: https://*.culqi.com; font-src 'self' https://*.culqi.com; style-src 'self' 'unsafe-inline' https://*.culqi.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    }
+}
+

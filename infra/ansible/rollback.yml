@@ -1,0 +1,27 @@
+# Migrations stay applied, so keep each release compatible with the previous schema.
+- name: Rollback
+  hosts: all
+  remote_user: deploy
+  environment: "{{ user_env }}"
+  tasks:
+    - name: Previous images exist
+      ansible.builtin.command: "podman image exists localhost/dwb-courses-{{ item }}:previous"
+      loop: "{{ images }}"
+      changed_when: false
+
+    - name: Swap current and previous
+      ansible.builtin.shell: |
+        set -e
+        image=localhost/dwb-courses-{{ item }}
+        podman tag "$image:current" "$image:next"
+        podman tag "$image:previous" "$image:current"
+        podman tag "$image:next" "$image:previous"
+        podman rmi "$image:next"
+      loop: "{{ images }}"
+
+    - name: Services
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        scope: user
+        state: restarted
+      loop: [api, caddy]

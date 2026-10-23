@@ -1,0 +1,94 @@
+service:
+  host: "0.0.0.0"
+  port: "3000"
+  concurrency: 2048
+  name: "dwb-courses"
+  env: "example"
+  hosts:
+    - "app.caminodeldiamante.pe"
+
+auth:
+  cookie_max_age: "1h"
+  cookie_name: "__Host-session"
+  refresh_rate: "15m"
+  max_concurrent_hashes: 1
+
+cors:
+  origins:
+    - https://app.caminodeldiamante.pe
+  methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+  headers:
+    - Content-Type
+    - Accept
+
+timeout:
+  sm: "2s"
+  md: "5s"
+  lg: "15s"
+
+database:
+  host: "/data/main.db"
+  max_connections: 8
+
+default_user:
+  name: "Admin"
+  email: "admin@example.com"
+
+email:
+  name: "[DWB] Camino Del Diamante Perú"
+  reply: "contacto@caminodeldiamante.pe"
+  link: "https://app.caminodeldiamante.pe"
+  logo: "https://app.caminodeldiamante.pe/static/dwb-logo.webp"
+  copyright: "© 2026 Budismo Camino del Diamante Perú"
+  troubleshoot: "Si tienes problemas para hacer clic en el botón '{ACTION}', copia y pega la siguiente URL en tu navegador web:"
+  greeting: "Hola"
+  signature: "Atentamente"
+
+templates:
+  primary_color: "#A91E22"
+  on_primary_color: "#F4F4F3"
+  admin_path: "/admin"
+
+smtp:
+  from: "no-reply@caminodeldiamante.pe"
+  host: "smtp.zoho.com"
+  user: "no-reply@caminodeldiamante.pe"
+  port: 465
+  # Required from env
+  pass:
+
+culqi:
+  base_url: "https://api.culqi.com/v2"
+  # Required from env
+  public_key: ""
+  secret_key: ""
+  rsa_id: ""
+  rsa_public_key: ""
+
+jobs:
+  delay_email_send: "1s"
+  delay_delete: "50ms"
+  ticker_duration: "15m"
+  timeout: "15m"
+  max_fetch: 150
+  max_email_attempts: 7
+
+rate_limit:
+  global_ip: 300
+  auth_email: 10
+  auth_ip: 20
+  public_form_ip: 120
+  public_registration_ip: 120
+  payment_ip: 10
+  payment_global: 120
+  payment_config_ip: 120
+  webhook_global: 240
+
+registration:
+  max_donation_cents: 1000000

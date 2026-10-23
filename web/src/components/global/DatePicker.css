@@ -1,0 +1,46 @@
+.date-picker-menu {
+  width: 20rem;
+}
+
+.date-picker-day {
+  border: none;
+  background: transparent;
+  border-radius: var(--bulma-radius);
+  padding: 0.4rem 0;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.date-picker-day:hover {
+  background-color: var(--bulma-primary-80);
+  color: var(--bulma-primary-invert-80);
+}
+
+.date-picker-day.is-muted {
+  color: var(--bulma-text-weak);
+}
+
+.date-picker-day.is-today {
+  font-weight: 700;
+  color: var(--bulma-primary);
+}
+
+.date-picker-day.is-selected {
+  background-color: var(--bulma-primary);
+  color: var(--bulma-primary-invert);
+  font-weight: 700;
+}
+
+.date-picker-day:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.date-picker-time-input {
+  width: 4rem;
+}
+
+.date-picker-footer {
+  border-top: 1px solid var(--bulma-border-weak);
+}

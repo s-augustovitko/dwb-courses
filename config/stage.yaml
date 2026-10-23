@@ -1,0 +1,31 @@
+service:
+  name: "dwb-courses"
+  env: "stage"
+  hosts:
+    - app.137-184-97-156.sslip.io
+
+cors:
+  origins:
+    - https://app.137-184-97-156.sslip.io
+
+email:
+  name: "[DWB STAGE] Camino del Diamante Perú"
+  reply: "contacto@caminodeldiamante.pe"
+  link: "https://app.137-184-97-156.sslip.io"
+  logo: "https://app.137-184-97-156.sslip.io/static/dwb-logo.webp"
+  copyright: "© 2026 Budismo Camino del Diamante Perú"
+  troubleshoot: "Si tienes problemas para hacer clic en el botón '{ACTION}', copia y pega la siguiente URL en tu navegador web:"
+
+templates:
+  primary_color: "#A91E22"
+  on_primary_color: "#F4F4F3"
+
+default_user:
+  name: "Salvador Augusto"
+  email: "s.augustovitko@pm.me"
+
+smtp:
+  from: "no-reply@caminodeldiamante.pe"
+  host: "smtp.zoho.com"
+  user: "no-reply@caminodeldiamante.pe"
+  port: 465

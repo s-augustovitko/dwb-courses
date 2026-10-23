@@ -1,0 +1,23 @@
+# Runs on every api start (not kept active)
+[Unit]
+Description=Apply database migrations
+{% if litestream %}
+Requires=litestream-restore.service
+After=litestream-restore.service
+{% endif %}
+
+[Container]
+Image=localhost/dwb-courses-api:current
+# Comes from api dockerfile
+Entrypoint=/server/goose
+Exec=-dir /server/migrations sqlite3 /data/main.db up
+Volume=%h/app/data:/data
+Network=none
+UserNS=keep-id:uid=1001,gid=1001
+ReadOnly=true
+NoNewPrivileges=true
+DropCapability=ALL
+PodmanArgs=--memory=128m
+
+[Service]
+Type=oneshot

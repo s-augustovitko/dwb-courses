@@ -1,0 +1,9 @@
+web/node_modules
+web/.helix
+local/*_data
+local/*_config
+internal/database
+web/dist
+bin
+*.env
+!*.env.example

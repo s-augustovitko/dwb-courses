@@ -1,0 +1,10 @@
+#:schema https://json.schemastore.org/any.json
+
+root = "/app"
+tmp_dir = "tmp"
+
+[build]
+  args_bin = ["--config", "/app/config/local.yaml"]
+  entrypoint = "/app/tmp/main"
+  cmd = "CGO_ENABLED=1 go build -o /app/tmp/main /app/cmd/..."
+  include_ext = ["go"]

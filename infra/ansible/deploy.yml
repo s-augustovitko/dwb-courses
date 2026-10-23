@@ -1,0 +1,192 @@
+- name: Deploy
+  hosts: all
+  remote_user: deploy
+  environment: "{{ user_env }}"
+  vars:
+    secrets: "{{ home }}/app/secrets"
+    units: "{{ home }}/.config/containers/systemd"
+    all_unit_files: "{{ query('fileglob', playbook_dir ~ '/../systemd/*') }}"
+    unit_files: "{{ all_unit_files if litestream else all_unit_files | reject('search', '/litestream[^/]*$') | list }}"
+    litestream_required:
+      - LITESTREAM_ACCESS_KEY_ID
+      - LITESTREAM_SECRET_ACCESS_KEY
+      - LITESTREAM_BUCKET
+      - LITESTREAM_ENDPOINT
+      - LITESTREAM_REGION
+      - LITESTREAM_HEARTBEAT_URL
+    required: "{{ ['DOZZLE_USER', 'DOZZLE_PASSWORD'] + (litestream_required if litestream else []) }}"
+    services: "{{ (['litestream'] if litestream else []) + ['api', 'caddy', 'dozzle'] }}"
+    # Relative to the repository. Podman does not strip the quotes of a .env file
+    api_env: >-
+      {{ lookup('file', [playbook_dir ~ '/../..', lookup('env', 'APP_ENV_FILE') | default('.' ~ inventory_hostname ~ '.env', true)] | path_join)
+         | regex_replace('(?m)^([A-Za-z_0-9]+)="(.*)"$', '\1=\2') }}
+    # Fixed salt: the file only changes with the password
+    dozzle_salt: "{{ ('dozzle' ~ ansible_host) | hash('sha256') | truncate(21, True, '') }}."
+  tasks:
+    - name: Everything needed is set
+      ansible.builtin.assert:
+        that: lookup('env', item) != ''
+        quiet: true
+      loop: "{{ required }}"
+
+    - name: Directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        mode: "{{ item.mode | default('0755') }}"
+      loop:
+        - { path: "{{ home }}/app/data", mode: "0700" }
+        - { path: "{{ secrets }}", mode: "0700" }
+        - { path: "{{ home }}/app/images" }
+        - { path: "{{ home }}/infra" }
+        - { path: "{{ units }}" }
+
+    - name: Secrets
+      ansible.builtin.copy:
+        dest: "{{ secrets }}/{{ item.name }}"
+        content: "{{ item.content }}\n"
+        mode: "0600"
+      no_log: true
+      when: item.name != 'litestream.env' or litestream
+      loop:
+        - name: api.env
+          content: "{{ api_env }}"
+        - name: caddy.env
+          content: |
+            APP_HOST={{ app_host }}
+            MONITOR_HOST={{ monitor_host }}
+            MONITOR_ALLOW_IPS={{ lookup('env', 'MONITOR_ALLOW_IPS') }}
+        - name: litestream.env
+          content: |
+            {% for name in litestream_required %}
+            {{ name }}={{ lookup('env', name) }}
+            {% endfor %}
+        - name: dozzle_users.yml
+          content: |
+            users:
+              {{ lookup('env', 'DOZZLE_USER') }}:
+                password: {{ lookup('env', 'DOZZLE_PASSWORD') | password_hash('bcrypt', salt=dozzle_salt, rounds=11) }}
+
+    - name: Configuration
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "0644"
+      when: item.dest is not search('litestream') or litestream
+      loop:
+        - { src: "{{ app_config }}", dest: "{{ home }}/app/config.yaml" }
+        - { src: ../config/litestream.yml, dest: "{{ home }}/infra/litestream.yml" }
+
+    - name: Litestream off
+      when: not litestream
+      block:
+        - name: Stop Litestream
+          ansible.builtin.command: systemctl --user stop litestream.service
+          changed_when: false
+          failed_when: false
+
+        - name: Litestream secrets and configuration
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - "{{ secrets }}/litestream.env"
+            - "{{ home }}/infra/litestream.yml"
+
+    - name: Units
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "{{ units }}/{{ item | basename }}"
+        mode: "0644"
+      loop: "{{ unit_files }}"
+
+    - name: Units on the server
+      ansible.builtin.find:
+        paths: "{{ units }}"
+      register: installed
+
+    - name: Units no longer in git
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ installed.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+      when: item.path | basename not in unit_files | map('basename')
+
+    # The generator only warns about unsupported keys
+    - name: Units are valid
+      ansible.builtin.command: /usr/libexec/podman/quadlet --user --dryrun
+      register: quadlet
+      failed_when: quadlet.rc != 0 or 'unsupported' in quadlet.stdout ~ quadlet.stderr
+      changed_when: false
+
+    - name: Podman API socket for Dozzle
+      ansible.builtin.systemd_service:
+        name: podman.socket
+        scope: user
+        enabled: true
+        state: started
+
+    - name: Third party images
+      ansible.builtin.command: "podman pull {{ item }}"
+      loop: "{{ ([litestream_image] if litestream else []) + [dozzle_image] }}"
+      changed_when: false
+
+    - name: Roll out
+      block:
+        - name: Images
+          ansible.builtin.copy:
+            src: "../../bin/images/{{ item }}.tar.gz"
+            dest: "{{ home }}/app/images/{{ item }}.tar.gz"
+            mode: "0600"
+          loop: "{{ images }}"
+
+        # Compares image ids, not the copy: after a rollback the same tarball is current again
+        - name: Load images
+          ansible.builtin.shell: |
+            set -e
+            image=localhost/dwb-courses-{{ item }}
+            tag={{ lookup('env', 'TAG') }}
+            podman load -qi {{ home }}/app/images/{{ item }}.tar.gz
+            new=$(podman images -q --no-trunc "$image:$tag")
+            current=$(podman images -q --no-trunc "$image:current")
+            if [ "$new" != "$current" ]; then
+              if [ -n "$current" ]; then podman tag "$image:current" "$image:previous"; fi
+              podman tag "$image:$tag" "$image:current"
+              echo loaded
+            fi
+            podman rmi "$image:$tag"
+          loop: "{{ images }}"
+          register: loaded
+          changed_when: "'loaded' in loaded.stdout_lines"
+
+        - name: Services
+          ansible.builtin.systemd_service:
+            name: "{{ item }}"
+            scope: user
+            daemon_reload: true
+            state: restarted
+          loop: "{{ services }}"
+      rescue:
+        # Only the ones loaded by this run: the others' previous is an older release
+        - name: Previous images
+          ansible.builtin.command: "podman tag localhost/dwb-courses-{{ item }}:previous localhost/dwb-courses-{{ item }}:current"
+          loop: "{{ loaded.results | default([]) | selectattr('changed') | map(attribute='item') }}"
+          failed_when: false
+
+        - name: Services on the previous images
+          ansible.builtin.systemd_service:
+            name: "{{ item }}"
+            scope: user
+            state: restarted
+          loop: [api, caddy]
+          failed_when: false
+
+        - name: Failed
+          ansible.builtin.fail:
+            msg: Deploy failed, the previous images are running again (journalctl --user -u api)
+
+    - name: Unused images
+      ansible.builtin.command: podman image prune -f
+      changed_when: false

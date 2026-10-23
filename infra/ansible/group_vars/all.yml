@@ -1,0 +1,24 @@
+home: /home/deploy
+# Fixed: the runtime paths depend on it
+deploy_uid: 2000
+user_env:
+  XDG_RUNTIME_DIR: "/run/user/{{ deploy_uid }}"
+  DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ deploy_uid }}/bus"
+images: [api, web]
+# Replicates the database to S3; host_vars can turn it off (no backups, no restore)
+litestream: true
+litestream_image: docker.io/litestream/litestream:latest
+# One-off Litestream commands (db_verify, db_restore) add their volumes and arguments
+litestream_run:
+  - podman
+  - run
+  - --rm
+  - --userns=keep-id:uid=1001,gid=1001
+  - --user=1001
+  - "--env-file={{ home }}/app/secrets/litestream.env"
+  - -v
+  - "{{ home }}/infra/litestream.yml:/etc/litestream.yml:ro"
+dozzle_image: docker.io/amir20/dozzle:latest
+# config/<env>.yaml; the api only answers the Host names listed in it
+app_config: "{{ playbook_dir }}/../../config/{{ inventory_hostname }}.yaml"
+app_host: "{{ (lookup('file', app_config) | from_yaml).service.hosts | first }}"

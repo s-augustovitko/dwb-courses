@@ -1,0 +1,62 @@
+@import "bulma/css/bulma.min.css";
+
+:root {
+  /* Primary (#F9CF00 - Bright Brand Yellow) */
+  --bulma-primary-h: 50deg;
+  --bulma-primary-s: 100%;
+  --bulma-primary-l: 49%;
+
+  /* Danger (#C90132 - Brand Red) */
+  --bulma-danger-h: 345deg;
+  --bulma-danger-s: 99%;
+  --bulma-danger-l: 40%;
+
+  /* Danger Text/Invert (#F4F4F3 - Soft Off-White) */
+  --bulma-danger-invert-h: 60deg;
+  --bulma-danger-invert-s: 4%;
+  --bulma-danger-invert-l: 95%;
+
+  /* Link (#A91E22 - Dark Red) */
+  --bulma-link-h: 358deg;
+  --bulma-link-s: 70%;
+  --bulma-link-l: 39%;
+
+  /* Info (#1EA891 - Teal) */
+  --bulma-info-h: 202deg;
+  --bulma-info-s: 82%;
+  --bulma-info-l: 66%;
+
+  /* Text (#2E2B2B - Very Dark Gray) */
+  --bulma-text-h: 0deg;
+  --bulma-text-s: 3%;
+  --bulma-text-l: 17%;
+
+  /* Focus (Green) */
+  --bulma-focus-h: 155deg;
+  --bulma-focus-s: 86%;
+  --bulma-focus-l: 29%;
+}
+
+.section-content {
+  min-height: 70vh;
+}
+
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.wrap-anywhere {
+  overflow-wrap: anywhere;
+}
+
+.columns > .column {
+  min-width: 0;
+}

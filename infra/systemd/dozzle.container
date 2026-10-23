@@ -1,0 +1,23 @@
+# The podman socket controls all of this user's containers: login + IP allow list
+[Unit]
+Description=Dozzle
+
+[Container]
+Image={{ dozzle_image }}
+Environment=DOZZLE_AUTH_PROVIDER=simple
+Environment=DOZZLE_NO_ANALYTICS=true
+Volume=%t/podman/podman.sock:/var/run/docker.sock:ro
+Volume=%h/app/secrets/dozzle_users.yml:/data/users.yml:ro
+Network=dwb.network
+PublishPort=127.0.0.1:8080:8080
+ReadOnly=true
+NoNewPrivileges=true
+DropCapability=ALL
+PodmanArgs={{ podman_args.dozzle }}
+
+[Service]
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

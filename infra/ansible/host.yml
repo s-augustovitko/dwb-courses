@@ -1,0 +1,135 @@
+- name: Host
+  hosts: all
+  remote_user: admin
+  become: "{{ ansible_user | default('admin') != 'root' }}"
+  vars:
+    pubkey: "{{ lookup('file', (lookup('env', 'DEPLOY_SSH_KEY') | expanduser) ~ '.pub') }}"
+  tasks:
+    - name: Packages
+      ansible.builtin.apt:
+        name: [podman, uidmap, passt, nftables, unattended-upgrades, sqlite3]
+        update_cache: true
+
+    # deploy has no sudo, so a container escape cannot become root
+    - name: Users
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        uid: "{{ item.uid | default(omit) }}"
+        shell: /bin/bash
+      loop:
+        - { name: admin }
+        - { name: deploy, uid: "{{ deploy_uid }}" }
+
+    - name: Admin without sudo password (key only login)
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/admin
+        content: "admin ALL=(ALL) NOPASSWD:ALL\n"
+        mode: "0440"
+        validate: visudo -cf %s
+
+    - name: SSH directories
+      ansible.builtin.file:
+        path: "/home/{{ item }}/.ssh"
+        state: directory
+        owner: "{{ item }}"
+        mode: "0700"
+      loop: [admin, deploy]
+
+    - name: SSH keys
+      ansible.builtin.copy:
+        dest: "/home/{{ item }}/.ssh/authorized_keys"
+        content: "{{ pubkey }}\n"
+        owner: "{{ item }}"
+        mode: "0600"
+      loop: [admin, deploy]
+
+    - name: Keep the deploy user's services running after logout
+      ansible.builtin.command: loginctl enable-linger deploy
+      args:
+        creates: /var/lib/systemd/linger/deploy
+
+    - name: Caddy binds 80 and 443 without root
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/99-dwb.conf
+        content: "net.ipv4.ip_unprivileged_port_start = 80\n"
+        mode: "0644"
+      notify: Reload sysctl
+
+    - name: Firewall
+      ansible.builtin.copy:
+        src: nftables.conf
+        dest: /etc/nftables.conf
+        mode: "0644"
+        validate: nft -c -f %s
+      notify: Reload firewall
+
+    - name: Firewall enabled
+      ansible.builtin.systemd_service:
+        name: nftables
+        enabled: true
+        state: started
+
+    - name: Unattended upgrades
+      ansible.builtin.copy:
+        dest: /etc/apt/apt.conf.d/52-dwb
+        content: |
+          Unattended-Upgrade::Automatic-Reboot "true";
+          Unattended-Upgrade::Automatic-Reboot-Time "08:30";
+          APT::Periodic::AutocleanInterval "7";
+        mode: "0644"
+
+    - name: Journal configuration directory
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        mode: "0755"
+
+    # Container logs live in the journal (default cap: up to 4 GB)
+    - name: Journal size limit
+      ansible.builtin.copy:
+        dest: /etc/systemd/journald.conf.d/50-dwb.conf
+        content: |
+          [Journal]
+          SystemMaxUse=500M
+        mode: "0644"
+      notify: Restart journald
+
+    - name: Swap file
+      ansible.builtin.command: fallocate -l 1G /swapfile
+      args:
+        creates: /swapfile
+      register: swapfile
+
+    - name: Swap enabled
+      ansible.builtin.shell: chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+      when: swapfile.changed
+
+    - name: Swap on boot
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: /swapfile none swap sw 0 0
+
+    # Last, after the keys are in place
+    - name: SSH hardening
+      ansible.builtin.copy:
+        src: sshd.conf
+        dest: /etc/ssh/sshd_config.d/10-hardening.conf
+        mode: "0644"
+        validate: sshd -t -f %s
+      notify: Reload ssh
+
+  handlers:
+    - name: Reload sysctl
+      ansible.builtin.command: sysctl --system
+    - name: Reload firewall
+      ansible.builtin.systemd_service:
+        name: nftables
+        state: restarted
+    - name: Reload ssh
+      ansible.builtin.systemd_service:
+        name: ssh
+        state: reloaded
+    - name: Restart journald
+      ansible.builtin.systemd_service:
+        name: systemd-journald
+        state: restarted

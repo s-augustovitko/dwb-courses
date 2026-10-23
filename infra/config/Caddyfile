@@ -1,0 +1,55 @@
+{
+	admin off
+}
+
+# Hosts come from caddy.env, so one image serves every environment
+{$APP_HOST} {
+	encode
+
+	# Max Request body size
+	request_body {
+		max_size 4MiB
+	}
+
+	# handle, not respond: handle runs first
+	@hidden {
+		path */.*
+	}
+	handle @hidden {
+		respond 403
+	}
+
+	handle /api/v1/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+
+		# Vite hashes /assets names, index.html must revalidate
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		header @shell Cache-Control "no-cache"
+		@shell not path /assets/*
+
+		header {
+			# frame-ancestors is 'self': Culqi never frames our page, our page frames Culqi.
+			# No form-action: the 3DS step may POST forms to the card bank's own host.
+			Content-Security-Policy "default-src 'self'; script-src 'self' https://js.culqi.com https://3ds.culqi.com https://checkout.culqi.com; frame-src https://*.culqi.com; connect-src 'self' https://*.culqi.com; img-src 'self' data: https://*.culqi.com; font-src 'self' https://*.culqi.com; style-src 'self' 'unsafe-inline' https://*.culqi.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "no-referrer"
+			Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		}
+	}
+}
+
+# Dozzle, allowed IPs in caddy.env
+{$MONITOR_HOST} {
+	@denied not client_ip {$MONITOR_ALLOW_IPS:127.0.0.1}
+	abort @denied
+	encode
+
+	reverse_proxy 127.0.0.1:8080
+}

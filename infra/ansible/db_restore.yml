@@ -1,0 +1,71 @@
+- name: Restore the database
+  hosts: all
+  remote_user: deploy
+  environment: "{{ user_env }}"
+  vars:
+    timestamp: "{{ lookup('env', 'TIMESTAMP') }}"
+    aside: "{{ home }}/app/data.{{ ansible_date_time.epoch }}"
+  pre_tasks:
+    - name: Litestream is on
+      ansible.builtin.assert:
+        that: litestream
+        fail_msg: Litestream is off for {{ inventory_hostname }} (host_vars), there is no replica
+        quiet: true
+  tasks:
+    - name: Confirm
+      ansible.builtin.pause:
+        prompt: >-
+          This stops the api and replaces the {{ inventory_hostname }} database with the replica
+          ({{ ('as of ' ~ timestamp) if timestamp else 'latest' }}).
+          Type {{ inventory_hostname }} to continue
+      register: confirm
+
+    - name: Check the confirmation
+      ansible.builtin.assert:
+        that: confirm.user_input == inventory_hostname
+        fail_msg: Not confirmed, nothing changed
+        quiet: true
+
+    - name: Stop
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        scope: user
+        state: stopped
+      loop: [api, litestream]
+
+    - name: Keep the current database aside
+      ansible.builtin.command: "mv {{ home }}/app/data {{ aside }}"
+
+    - name: Empty data directory
+      ansible.builtin.file:
+        path: "{{ home }}/app/data"
+        state: directory
+        mode: "0700"
+
+    - name: Restore
+      ansible.builtin.command:
+        argv: >-
+          {{ litestream_run + ['-v', home ~ '/app/data:/data', litestream_image, 'restore']
+             + (['-timestamp', timestamp] if timestamp else [])
+             + ['/data/main.db'] }}
+
+    - name: Start
+      ansible.builtin.systemd_service:
+        name: api
+        scope: user
+        state: started
+
+    # Kept-aside copies hold personal data
+    - name: Old database copies
+      ansible.builtin.find:
+        paths: "{{ home }}/app"
+        patterns: "data.*"
+        file_type: directory
+        age: 30d
+      register: old
+
+    - name: Delete database copies older than 30 days
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ old.files }}"

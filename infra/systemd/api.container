@@ -1,0 +1,38 @@
+[Unit]
+Description=API
+Requires=migrate.service
+After=migrate.service
+{% if litestream %}
+Wants=litestream.service
+{% endif %}
+
+[Container]
+Image=localhost/dwb-courses-api:current
+Exec=--config /etc/dwb/config.yaml
+EnvironmentFile=%h/app/secrets/api.env
+Environment=GOMEMLIMIT={{ gomemlimit }}
+Volume=%h/app/data:/data
+Volume=%h/app/config.yaml:/etc/dwb/config.yaml:ro
+Network=dwb.network
+PublishPort=127.0.0.1:3000:3000
+# Lets the image user write the host-owned database
+UserNS=keep-id:uid=1001,gid=1001
+ReadOnly=true
+NoNewPrivileges=true
+DropCapability=ALL
+PodmanArgs={{ podman_args.api }}
+# The Host header must be one of service.hosts
+HealthCmd=wget -qO- --header "Host: {{ app_host }}" http://127.0.0.1:3000/api/v1/readyz
+HealthInterval=10s
+HealthOnFailure=restart
+# start/restart wait for the first healthy check
+Notify=healthy
+# Worker + connection drain, 15s each
+StopTimeout=40
+
+[Service]
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

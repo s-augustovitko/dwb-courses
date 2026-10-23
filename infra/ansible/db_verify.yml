@@ -1,0 +1,39 @@
+- name: Verify the replica
+  hosts: all
+  remote_user: deploy
+  environment: "{{ user_env }}"
+  pre_tasks:
+    - name: Litestream is on
+      ansible.builtin.assert:
+        that: litestream
+        fail_msg: Litestream is off for {{ inventory_hostname }} (host_vars), there is no replica
+        quiet: true
+  tasks:
+    - name: Temporary directory
+      ansible.builtin.tempfile:
+        state: directory
+      register: tmp
+
+    - name: Restore
+      ansible.builtin.command:
+        argv: "{{ litestream_run + ['-v', tmp.path ~ ':/out', litestream_image, 'restore', '-o', '/out/main.db', '/data/main.db'] }}"
+
+    - name: Check
+      ansible.builtin.command: "sqlite3 {{ tmp.path }}/main.db 'PRAGMA integrity_check; PRAGMA foreign_key_check;'"
+      register: check
+      failed_when: check.stdout != 'ok'
+      changed_when: false
+
+    - name: Rows
+      ansible.builtin.command: "sqlite3 {{ tmp.path }}/main.db 'SELECT COUNT(*) FROM users;'"
+      register: users
+      changed_when: false
+
+    - name: Result
+      ansible.builtin.debug:
+        msg: "integrity ok, {{ users.stdout }} users"
+  post_tasks:
+    - name: Clean up
+      ansible.builtin.file:
+        path: "{{ tmp.path }}"
+        state: absent

@@ -1,0 +1,15 @@
+dbs:
+  - path: /data/main.db
+    replica:
+      type: s3
+      bucket: ${LITESTREAM_BUCKET}
+      path: main.db
+      endpoint: ${LITESTREAM_ENDPOINT}
+      region: ${LITESTREAM_REGION}
+
+# 7 days of point-in-time history
+snapshot:
+  retention: 168h
+
+# Alert on silence (healthchecks.io)
+heartbeat-url: ${LITESTREAM_HEARTBEAT_URL}
