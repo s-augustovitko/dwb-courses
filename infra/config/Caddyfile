@@ -1,5 +1,7 @@
 {
 	admin off
+	# Config comes from this file, the autosave copy is never read
+	persist_config off
 }
 
 # Hosts come from caddy.env, so one image serves every environment

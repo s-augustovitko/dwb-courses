@@ -7,6 +7,7 @@ Image={{ dozzle_image }}
 Environment=DOZZLE_AUTH_PROVIDER=simple
 Environment=DOZZLE_NO_ANALYTICS=true
 Volume=%t/podman/podman.sock:/var/run/docker.sock:ro
+Volume=dozzle_data:/data
 Volume=%h/app/secrets/dozzle_users.yml:/data/users.yml:ro
 Network=dwb.network
 PublishPort=127.0.0.1:8080:8080
