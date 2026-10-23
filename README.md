@@ -20,8 +20,8 @@ make migrate_up         # creates local/db_data/main.db
 make run                # starts the local stack
 ```
 
-- App: http://web.localhost:3000
-- Logs (Dozzle): http://dozzle.localhost:3000
+- App: https://web.localhost:3000
+- Logs (Dozzle): https://dozzle.localhost:3000
 
 Other targets: `make lint`, `make help`, `make logs SERVICE=<name>`, `make clean`.
 
