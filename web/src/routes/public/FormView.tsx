@@ -79,7 +79,9 @@ const FormContent: Component<{
 
       <h1 class="title mb-2">{props.form.title}</h1>
       <Show when={props.form.description}>
-        <p class="has-text-grey mb-5">{props.form.description}</p>
+        <p class="has-text-grey mb-5 wrap-anywhere keep-line-breaks">
+          {props.form.description}
+        </p>
       </Show>
 
       <Show

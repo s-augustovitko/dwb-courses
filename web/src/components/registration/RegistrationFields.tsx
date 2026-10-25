@@ -8,7 +8,7 @@ import {
 } from "@modular-forms/solid";
 import { type Component, createSignal, For, Show } from "solid-js";
 import * as v from "valibot";
-import { MoneyInput } from "~/components/global";
+import { Accordion, MoneyInput } from "~/components/global";
 import type {
   Audience,
   PublicCountry,
@@ -145,22 +145,36 @@ export const RegistrationFields: Component<Props> = (props) => {
         />
 
         <Show when={props.showOverrides && selectedItems().length > 0}>
-          <h3 class="title is-5 mt-4">Precios (opcional)</h3>
-          <p class="help mb-2">Déjalo vacío para usar el precio actual.</p>
-          <For each={selectedItems()}>
-            {(item) => (
-              <Field of={selectionForm} name={`overrides.${item.id}`}>
-                {(field, fieldProps) => (
-                  <MoneyInput
-                    {...fieldProps}
-                    value={field.value}
-                    error={field.error}
-                    label={itemLabel(item)}
-                  />
-                )}
-              </Field>
+          <Accordion title="Editar precio por sesión">
+            <p class="help mb-2">Déjalo vacío para usar el precio actual.</p>
+            <For each={selectedItems()}>
+              {(item) => (
+                <Field of={selectionForm} name={`overrides.${item.id}`}>
+                  {(field, fieldProps) => (
+                    <MoneyInput
+                      {...fieldProps}
+                      value={field.value}
+                      error={field.error}
+                      label={itemLabel(item)}
+                    />
+                  )}
+                </Field>
+              )}
+            </For>
+          </Accordion>
+        </Show>
+
+        <Show when={!props.form.disableDonation}>
+          <Field of={selectionForm} name="donationText">
+            {(field, fieldProps) => (
+              <MoneyInput
+                {...fieldProps}
+                value={field.value}
+                error={field.error}
+                label="Donación (opcional)"
+              />
             )}
-          </For>
+          </Field>
         </Show>
 
         <Show when={personForm.invalid || selectionForm.invalid}>

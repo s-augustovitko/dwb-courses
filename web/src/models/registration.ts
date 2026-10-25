@@ -113,6 +113,8 @@ export type CartLine = {
   itemId: string;
   name: string;
   amountCents: number;
+  hintText?: string;
+  cutoffDate?: string;
 };
 
 export type Cart = {

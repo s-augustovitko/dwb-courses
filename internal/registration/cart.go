@@ -5,17 +5,20 @@ import (
 	"database/sql"
 	"errors"
 	"slices"
+	"time"
 
 	"dwb-courses/internal/api"
 	"dwb-courses/internal/database"
 )
 
 type cartLine struct {
-	Manual      bool   `json:"manual"`
-	LineID      string `json:"lineId"`
-	ItemID      string `json:"itemId"`
-	Name        string `json:"name"`
-	AmountCents int64  `json:"amountCents"`
+	Manual      bool       `json:"manual"`
+	LineID      string     `json:"lineId"`
+	ItemID      string     `json:"itemId"`
+	Name        string     `json:"name"`
+	AmountCents int64      `json:"amountCents"`
+	HintText    string     `json:"hintText,omitempty"`
+	CutoffDate  *time.Time `json:"cutoffDate,omitempty"`
 }
 
 type cartResponse struct {
@@ -151,6 +154,8 @@ func loadLines(
 					ItemID:      api.UUIDString(item.SessionID),
 					Name:        item.NameSnapshot,
 					AmountCents: item.UnitPriceCents,
+					HintText:    "",
+					CutoffDate:  nil,
 				}
 			},
 		),
@@ -163,6 +168,8 @@ func loadLines(
 					ItemID:      api.UUIDString(item.MealID),
 					Name:        item.NameSnapshot,
 					AmountCents: item.UnitPriceCents,
+					HintText:    "",
+					CutoffDate:  nil,
 				}
 			}),
 		Discounts: convertLines(
@@ -174,6 +181,8 @@ func loadLines(
 					ItemID:      api.UUIDString(item.DiscountID),
 					Name:        item.NameSnapshot,
 					AmountCents: item.AmountCents,
+					HintText:    item.HintText,
+					CutoffDate:  cutoffDate(item.CutoffDate),
 				}
 			},
 		),
@@ -181,6 +190,16 @@ func loadLines(
 	}
 
 	return lines, nil
+}
+
+func cutoffDate(unix sql.NullInt64) *time.Time {
+	if !unix.Valid {
+		return nil
+	}
+
+	date := api.FromUnix(unix.Int64)
+
+	return &date
 }
 
 func convertLines[T any](rows []T, convert func(T) cartLine) []cartLine {

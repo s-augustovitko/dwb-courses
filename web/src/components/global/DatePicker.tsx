@@ -536,6 +536,13 @@ export const DatePicker: Component<Props> = (props) => {
                 </button>
                 <button
                   type="button"
+                  class="button is-small is-text has-text-success"
+                  onClick={closePicker}
+                >
+                  Guardar
+                </button>
+                <button
+                  type="button"
                   class="button is-small is-text has-text-danger"
                   onClick={clearDate}
                 >

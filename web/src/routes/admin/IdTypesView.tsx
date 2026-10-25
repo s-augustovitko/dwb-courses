@@ -113,7 +113,7 @@ const AdminIdTypesView: Component = () => {
           active,
         }),
       rollback: () => setIdTypes(previous),
-      successMessage: `Tipo de identificación ${active ? "restaurado" : "eliminado"}`,
+      successMessage: `Tipo de identificación ${active ? "habilitado" : "deshabilitado"}`,
       notify: notifications,
     });
   }

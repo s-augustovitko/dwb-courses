@@ -9,10 +9,11 @@ cors:
     - https://web.localhost:3000
 
 email:
+  from: "no-reply@caminodeldiamante.pe"
   name: "[DWB] Camino del Diamante Perú"
   reply: "contacto@caminodeldiamante.pe"
   link: "https://web.localhost:3000"
-  logo: "https://web.localhost:3000/static/dwb-logo.webp"
+  header: "https://web.localhost:3000/dwb-header.webp"
   copyright: "© 2026 Budismo Camino del Diamante Perú"
   troubleshoot: "Si tienes problemas para hacer clic en el botón '{ACTION}', copia y pega la siguiente URL en tu navegador web:"
 
@@ -24,8 +25,5 @@ default_user:
   name: "Salvador Augusto"
   email: "s.augustovitko@pm.me"
 
-smtp:
-  from: "no-reply@caminodeldiamante.pe"
-  host: "smtp.zoho.com"
-  user: "no-reply@caminodeldiamante.pe"
-  port: 465
+zoho:
+  base_url: "https://cpaas.zoho.com/v1.1"

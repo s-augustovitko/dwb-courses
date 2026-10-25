@@ -11,6 +11,7 @@ auth:
   cookie_max_age: "1h"
   cookie_name: "__Host-session"
   refresh_rate: "15m"
+  rotation_grace: "30s"
   max_concurrent_hashes: 1
 
 cors:
@@ -41,10 +42,11 @@ default_user:
   email: "admin@example.com"
 
 email:
+  from: "no-reply@caminodeldiamante.pe"
   name: "[DWB] Camino Del Diamante Perú"
   reply: "contacto@caminodeldiamante.pe"
   link: "https://app.caminodeldiamante.pe"
-  logo: "https://app.caminodeldiamante.pe/static/dwb-logo.webp"
+  header: "https://app.caminodeldiamante.pe/dwb-header.webp"
   copyright: "© 2026 Budismo Camino del Diamante Perú"
   troubleshoot: "Si tienes problemas para hacer clic en el botón '{ACTION}', copia y pega la siguiente URL en tu navegador web:"
   greeting: "Hola"
@@ -55,13 +57,10 @@ templates:
   on_primary_color: "#F4F4F3"
   admin_path: "/admin"
 
-smtp:
-  from: "no-reply@caminodeldiamante.pe"
-  host: "smtp.zoho.com"
-  user: "no-reply@caminodeldiamante.pe"
-  port: 465
+zoho:
+  base_url: "https://cpaas.zoho.com/v1.1"
   # Required from env
-  pass:
+  api_key: ""
 
 culqi:
   base_url: "https://api.culqi.com/v2"

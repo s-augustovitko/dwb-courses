@@ -25,6 +25,8 @@ export function emptyPerson(): PersonValues {
 export function emptySelection(currencyCode: string): SelectionValues {
   return {
     currencyCode,
+    sessionMode: "",
+    mealMode: "",
     sessionIds: [],
     mealIds: [],
     dietaryPreference: "",

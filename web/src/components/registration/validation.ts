@@ -181,6 +181,10 @@ export const dietaryField = (required: boolean) =>
     v.check((preference) => !required || preference !== "", NO_DIETARY_ERROR),
   );
 
+// Left undefined when its section is hidden.
+const selectionModeField = () =>
+  v.optional(v.pipe(v.string(), v.nonEmpty(REQUIRED)));
+
 /** Staff price per item id: empty keeps the catalog price. */
 export const overridesField = () =>
   v.record(v.string(), optionalMoneyField(MAX_CENTS));
@@ -198,6 +202,8 @@ export const selectionSchema = (form: PublicForm) =>
 
     return v.object({
       currencyCode: v.pipe(v.string(), v.nonEmpty(REQUIRED)),
+      sessionMode: selectionModeField(),
+      mealMode: selectionModeField(),
       sessionIds: v.optional(
         v.pipe(
           v.array(v.string()),

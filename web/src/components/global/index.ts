@@ -2,6 +2,7 @@ export * from "./Accordion";
 export * from "./ActiveTabs";
 export * from "./ConfirmModal";
 export * from "./DatePicker";
+export * from "./HintIcon";
 export * from "./Input";
 export * from "./Modal";
 export * from "./ModalFooter";

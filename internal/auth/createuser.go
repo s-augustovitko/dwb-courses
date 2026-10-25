@@ -111,7 +111,10 @@ func sendCredentials(
 	pass string,
 	logger *zerolog.Logger,
 ) error {
-	err := sendCreateUserEmail(srv, emailDataCreateUser{
+	sendCtx, sendCancel := srv.Cfg().LgCtx(context.Background())
+	defer sendCancel()
+
+	err := sendCreateUserEmail(sendCtx, srv, emailDataCreateUser{
 		Email:    user.Email,
 		Name:     user.Name,
 		Password: pass,

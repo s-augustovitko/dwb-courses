@@ -1,6 +1,8 @@
 package registration
 
 import (
+	"context"
+
 	"github.com/matcornic/hermes/v2"
 
 	"dwb-courses/internal/api"
@@ -27,10 +29,15 @@ type emailDataRegistrationConfirmation struct {
 }
 
 func sendRegistrationConfirmedEmail(
+	ctx context.Context,
 	deps api.MailDeps,
 	data emailDataRegistrationConfirmation,
 ) error {
-	return api.SendRegistrationEmail(deps, registrationConfirmedContent(data))
+	return api.SendRegistrationEmail(
+		ctx,
+		deps,
+		registrationConfirmedContent(data),
+	)
 }
 
 func registrationConfirmedContent(

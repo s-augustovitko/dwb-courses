@@ -36,7 +36,7 @@ type rotation struct {
 		hash sql.NullString,
 		failures int64,
 	) error
-	send func(link string) error
+	send func(ctx context.Context, link string) error
 }
 
 func rotateAndEmail(ctx context.Context, d deps, r rotation) error {
@@ -57,7 +57,7 @@ func rotateAndEmail(ctx context.Context, d deps, r rotation) error {
 		return nil
 	}
 
-	sendErr := r.send(d.Cfg().Email.Link + "/registrations/" + token)
+	sendErr := r.send(ctx, d.Cfg().Email.Link+"/registrations/"+token)
 	if sendErr == nil {
 		return nil
 	}
@@ -78,17 +78,18 @@ func rotateAndEmail(ctx context.Context, d deps, r rotation) error {
 			Str("order", api.UUIDString(r.orderID)).
 			Int64("attempts", failures).
 			Msg("gave up emailing this order; " +
-				"check the SMTP relay and the registrant's email")
+				"check the email provider and the registrant's email")
 	}
 
 	return sendErr
 }
 
 func sendDraftReminderEmail(
+	ctx context.Context,
 	deps api.MailDeps,
 	data emailDataRegistration,
 ) error {
-	return api.SendRegistrationEmail(deps, draftReminderContent(data))
+	return api.SendRegistrationEmail(ctx, deps, draftReminderContent(data))
 }
 
 func draftReminderContent(data emailDataRegistration) api.EmailContent {
@@ -109,11 +110,13 @@ func draftReminderContent(data emailDataRegistration) api.EmailContent {
 }
 
 func sendPaymentReminderEmail(
+	ctx context.Context,
 	deps api.MailDeps,
 	data emailDataRegistration,
 	balance string,
 ) error {
 	return api.SendRegistrationEmail(
+		ctx,
 		deps,
 		paymentReminderContent(data, balance),
 	)

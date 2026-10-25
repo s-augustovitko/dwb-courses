@@ -57,6 +57,28 @@
   overflow-wrap: anywhere;
 }
 
+.keep-line-breaks {
+  white-space: pre-line;
+}
+
+.icon-tooltip {
+  position: fixed;
+  z-index: 50;
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--bulma-radius);
+  background-color: var(--bulma-scheme-invert);
+  color: var(--bulma-scheme-main);
+  font-size: var(--bulma-size-small);
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.darken-on-hover:hover {
+  filter: brightness(0.8);
+}
+
 .columns > .column {
   min-width: 0;
 }

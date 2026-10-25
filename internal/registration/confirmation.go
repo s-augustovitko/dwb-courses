@@ -85,18 +85,22 @@ func (s server) sendConfirmation(
 		return err
 	}
 
-	return sendRegistrationConfirmedEmail(s, emailDataRegistrationConfirmation{
-		To:           sub.Email,
-		FirstName:    sub.FirstName,
-		Link:         link,
-		CurrencyCode: cart.CurrencyCode,
-		Lines:        summaryLines(cart),
-		TotalCents:   cart.TotalCents,
-		QRPNG:        image,
-		Paid:         kind == confirmationPaid,
-		Free: kind == confirmationRegistered &&
-			cart.Status == statusPaid,
-	})
+	return sendRegistrationConfirmedEmail(
+		ctx,
+		s,
+		emailDataRegistrationConfirmation{
+			To:           sub.Email,
+			FirstName:    sub.FirstName,
+			Link:         link,
+			CurrencyCode: cart.CurrencyCode,
+			Lines:        summaryLines(cart),
+			TotalCents:   cart.TotalCents,
+			QRPNG:        image,
+			Paid:         kind == confirmationPaid,
+			Free: kind == confirmationRegistered &&
+				cart.Status == statusPaid,
+		},
+	)
 }
 
 func summaryLines(cart cartResponse) []summaryLine {

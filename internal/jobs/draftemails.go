@@ -28,13 +28,20 @@ func draftEmailsJob(d deps) job[draftEmailRow] {
 			return rotateAndEmail(
 				ctx,
 				d,
-				draftRotation(row, func(link string) error {
-					return sendDraftReminderEmail(d, emailDataRegistration{
-						To:        row.Email,
-						FirstName: row.FirstName,
-						Link:      link,
-					})
-				}),
+				draftRotation(
+					row,
+					func(ctx context.Context, link string) error {
+						return sendDraftReminderEmail(
+							ctx,
+							d,
+							emailDataRegistration{
+								To:        row.Email,
+								FirstName: row.FirstName,
+								Link:      link,
+							},
+						)
+					},
+				),
 			)
 		},
 	}
@@ -42,7 +49,7 @@ func draftEmailsJob(d deps) job[draftEmailRow] {
 
 func draftRotation(
 	row draftEmailRow,
-	send func(link string) error,
+	send func(ctx context.Context, link string) error,
 ) rotation {
 	return rotation{
 		orderID:  row.ID,

@@ -71,6 +71,10 @@ linters:
       - path: internal/payments/culqi/
         linters:
           - tagliatelle
+      # Zoho's REST API uses snake_case JSON
+      - path: internal/mail/zoho/
+        linters:
+          - tagliatelle
       - path: _test\.go
         linters:
           - funlen

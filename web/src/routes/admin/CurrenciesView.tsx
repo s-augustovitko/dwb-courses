@@ -51,7 +51,7 @@ const AdminCurrenciesView: Component = () => {
     if (inactive.some((c) => c.code === values.code)) {
       throw new ApiError(
         "DUPLICATE",
-        `La moneda ${values.code} está eliminada, restáurala desde Deshabilitados`,
+        `La moneda ${values.code} está deshabilitada, habilítala desde Deshabilitados`,
       );
     }
     if (active.some((c) => c.code === values.code)) {
@@ -161,7 +161,7 @@ const AdminCurrenciesView: Component = () => {
           { active },
         ),
       rollback: () => setCurrencies(previous),
-      successMessage: `Moneda ${active ? "restaurada" : "eliminada"}`,
+      successMessage: `Moneda ${active ? "habilitada" : "deshabilitada"}`,
       notify: notifications,
     });
   }
@@ -209,7 +209,7 @@ const AdminCurrenciesView: Component = () => {
         noun="moneda"
         pending={activeConfirm()}
         name={activeConfirm()?.target.displayName ?? ""}
-        deleteWarning="Se quitará de todos los formularios que la usan."
+        disableWarning="Se quitará de todos los formularios que la usan."
         onCancel={() => setActiveConfirm(null)}
         onConfirm={handleSetActiveOptimistically}
       />

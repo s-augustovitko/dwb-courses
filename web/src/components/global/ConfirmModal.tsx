@@ -60,21 +60,21 @@ type ActiveConfirmProps = {
   /** Lowercase noun for the title, e.g. "moneda". */
   noun: string;
 
-  /** Set while confirming: active false deletes, active true restores. */
+  /** Set while confirming: active false disables, active true enables. */
   pending: { active: boolean } | null;
   name: string;
-  deleteWarning?: string;
+  disableWarning?: string;
 
   onCancel: () => void;
   onConfirm: () => Promise<void>;
 };
 
 export const ActiveConfirmModal: Component<ActiveConfirmProps> = (props) => {
-  const label = () => (props.pending?.active ? "Restaurar" : "Eliminar");
+  const label = () => (props.pending?.active ? "Habilitar" : "Deshabilitar");
   const message = () => {
     const question = `¿Seguro que deseas ${label().toLowerCase()} ${props.name}?`;
-    return !props.pending?.active && props.deleteWarning
-      ? `${question} ${props.deleteWarning}`
+    return !props.pending?.active && props.disableWarning
+      ? `${question} ${props.disableWarning}`
       : question;
   };
 

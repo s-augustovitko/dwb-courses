@@ -21,19 +21,19 @@ export const ActiveToggleButton: Component<{
 }> = (props) => (
   <button
     type="button"
-    aria-label={`${props.isActive ? "Eliminar" : "Restaurar"} ${props.name}`}
+    aria-label={`${props.isActive ? "Deshabilitar" : "Habilitar"} ${props.name}`}
     onClick={props.onClick}
   >
     <Show
       when={props.isActive}
       fallback={
         <IconTrashRestore
-          title="Restaurar"
+          title="Habilitar"
           class="is-size-5 has-text-success"
         />
       }
     >
-      <IconTrash title="Eliminar" class="is-size-5 has-text-danger" />
+      <IconTrash title="Deshabilitar" class="is-size-5 has-text-danger" />
     </Show>
   </button>
 );

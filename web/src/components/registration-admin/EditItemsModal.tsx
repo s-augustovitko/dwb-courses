@@ -25,6 +25,7 @@ import {
   overridesField,
   priceIn,
   toOverrides,
+  toSwitchOption,
 } from "~/components/registration";
 import { type CartLine, dietaryOptions, type PublicOption } from "~/models";
 import { useNotifications } from "~/stores";
@@ -82,12 +83,13 @@ function withOrderPrices(
 function selectOptions(
   options: PublicOption[],
   currencyCode: string,
+  withTime: boolean,
 ): SelectOption[] {
   return options
     .filter((option) => isPriced(option, currencyCode))
     .map((option) => ({
       value: option.id,
-      label: `${option.name} · ${formatCents(currencyCode, priceIn(option, currencyCode))}`,
+      label: `${toSwitchOption(option, currencyCode, withTime).label} - ${formatCents(currencyCode, priceIn(option, currencyCode))}`,
     }));
 }
 
@@ -206,7 +208,11 @@ export const EditItemsModal: Component<ActionProps> = (props) => {
                 error={field.error}
                 required={sessionsRequired()}
                 label="Sesiones"
-                options={selectOptions(sessions(), props.reg.currencyCode)}
+                options={selectOptions(
+                  sessions(),
+                  props.reg.currencyCode,
+                  true,
+                )}
               />
             )}
           </Field>
@@ -218,7 +224,11 @@ export const EditItemsModal: Component<ActionProps> = (props) => {
                   value={field.value}
                   error={field.error}
                   label="Comidas"
-                  options={selectOptions(meals(), props.reg.currencyCode)}
+                  options={selectOptions(
+                    meals(),
+                    props.reg.currencyCode,
+                    false,
+                  )}
                 />
               )}
             </Field>

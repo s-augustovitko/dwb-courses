@@ -34,9 +34,9 @@ export const Accordion: Component<Props> = (props) => {
         </button>
       </h2>
 
-      <Show when={open()}>
-        <div class="mt-4">{props.children}</div>
-      </Show>
+      <div class="mt-4" hidden={!open()}>
+        {props.children}
+      </div>
     </div>
   );
 };

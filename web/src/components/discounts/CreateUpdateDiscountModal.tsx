@@ -242,7 +242,7 @@ export const CreateUpdateDiscountModal: Component<Props> = (props) => {
         </Field>
 
         <Show when={getValue(form, "discountType") !== "MEALS_INCLUDED"}>
-          <h2 class="subtitle">Precios</h2>
+          <h2 class="subtitle">Monto a descontar</h2>
         </Show>
 
         <For each={props.currencies}>
@@ -256,7 +256,7 @@ export const CreateUpdateDiscountModal: Component<Props> = (props) => {
                     {...fieldProps}
                     value={field.value}
                     error={field.error}
-                    label={`Precio (${currency.displayName})`}
+                    label={`Monto (${currency.displayName})`}
                     required
                   />
                 </Show>

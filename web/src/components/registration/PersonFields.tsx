@@ -48,6 +48,35 @@ export const PersonFields: Component<Props> = (props) => {
     <>
       <div class="field grid is-col-min-10">
         <div class="cell">
+          <Field of={props.of} name="firstName">
+            {(field, fieldProps) => (
+              <Input
+                {...fieldProps}
+                value={field.value}
+                error={field.error}
+                required
+                label="Nombres"
+              />
+            )}
+          </Field>
+        </div>
+        <div class="cell">
+          <Field of={props.of} name="lastName">
+            {(field, fieldProps) => (
+              <Input
+                {...fieldProps}
+                value={field.value}
+                error={field.error}
+                required
+                label="Apellidos"
+              />
+            )}
+          </Field>
+        </div>
+      </div>
+
+      <div class="field grid is-col-min-10">
+        <div class="cell">
           <Field of={props.of} name="idTypeId">
             {(field, fieldProps) => (
               <Select
@@ -74,35 +103,6 @@ export const PersonFields: Component<Props> = (props) => {
                 error={field.error}
                 required
                 label="Número de documento"
-              />
-            )}
-          </Field>
-        </div>
-      </div>
-
-      <div class="field grid is-col-min-10">
-        <div class="cell">
-          <Field of={props.of} name="firstName">
-            {(field, fieldProps) => (
-              <Input
-                {...fieldProps}
-                value={field.value}
-                error={field.error}
-                required
-                label="Nombres"
-              />
-            )}
-          </Field>
-        </div>
-        <div class="cell">
-          <Field of={props.of} name="lastName">
-            {(field, fieldProps) => (
-              <Input
-                {...fieldProps}
-                value={field.value}
-                error={field.error}
-                required
-                label="Apellidos"
               />
             )}
           </Field>

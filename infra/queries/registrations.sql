@@ -269,7 +269,9 @@ SELECT
     odi.discount_id,
     odi.name_snapshot,
     odi.amount_cents,
-    d.discount_type
+    d.discount_type,
+    d.hint_text,
+    d.cutoff_date
 FROM order_discount_items odi
 JOIN discounts d ON d.id = odi.discount_id
 WHERE odi.order_id = ?

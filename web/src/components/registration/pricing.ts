@@ -134,6 +134,8 @@ export function estimateOrder(
         itemId: discount.id,
         name: discount.name,
         amountCents,
+        hintText: discount.hintText,
+        cutoffDate: discount.cutoffDate,
       });
     }
   }
@@ -153,7 +155,7 @@ export function estimateOrder(
   };
 }
 
-/** e.g. "Elige todas las sesiones para obtener Preventa (- S/ 50.00, hasta el ...)". */
+/** e.g. "Elige todas las sesiones para obtener Preventa | hasta el 30 de oct. (- S/ 50.00)". */
 export function discountHint(missed: MissedDiscount, currencyCode: string) {
   const { discount } = missed;
   const needs = [
@@ -162,23 +164,26 @@ export function discountHint(missed: MissedDiscount, currencyCode: string) {
   ]
     .filter(Boolean)
     .join(" y ");
-  const details = [
+  const details =
     discount.discountType === "MEALS_INCLUDED"
       ? "tus comidas sin costo"
-      : `- ${formatCents(currencyCode, priceIn(discount, currencyCode))}`,
-    discount.cutoffDate &&
-      `hasta el ${formatDateTime(discount.cutoffDate, "D [de] MMM [a las] HH:mm")}`,
-  ]
-    .filter(Boolean)
-    .join(", ");
+      : `- ${formatCents(currencyCode, priceIn(discount, currencyCode))}`;
 
-  return joinParts(
-    `Elige ${needs} para obtener ${discount.name} (${details})`,
-    discount.hintText,
-  );
+  return `Elige ${needs} para obtener ${discountTitle(discount)} (${details})`;
 }
 
 const joinParts = (...parts: string[]) => parts.filter(Boolean).join(" | ");
+
+export const discountTitle = (discount: {
+  name: string;
+  cutoffDate?: string;
+}) =>
+  joinParts(
+    discount.name,
+    discount.cutoffDate
+      ? `hasta el ${formatDateTime(discount.cutoffDate, "D [de] MMM")}`
+      : "",
+  );
 
 export function toSwitchOption(
   option: PublicOption,

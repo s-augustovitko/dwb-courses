@@ -155,13 +155,13 @@ export const FormDetailsSection: Component<Props> = (props) => {
   return (
     <>
       <Accordion title="Datos del formulario" initialOpen>
-        <div class="level block">
-          <div class="level-left">
+        <div class="columns block">
+          <div class="column">
             <div>
-              <p>
+              <p class="wrap-anywhere">
                 <strong>Título:</strong> {props.form()?.title}
               </p>
-              <p>
+              <p class="wrap-anywhere keep-line-breaks">
                 <strong>Descripción:</strong> {props.form()?.description || "-"}
               </p>
 
@@ -188,7 +188,7 @@ export const FormDetailsSection: Component<Props> = (props) => {
             </div>
           </div>
 
-          <div class="level-right">
+          <div class="column is-narrow">
             <div class="buttons">
               <Show when={canWrite()}>
                 <button

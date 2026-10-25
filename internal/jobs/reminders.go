@@ -30,17 +30,21 @@ func paymentRemindersJob(d deps) job[reminderRow] {
 			return rotateAndEmail(
 				ctx,
 				d,
-				reminderRotation(row, func(link string) error {
-					return sendPaymentReminderEmail(
-						d,
-						emailDataRegistration{
-							To:        row.Email,
-							FirstName: row.FirstName,
-							Link:      link,
-						},
-						api.FormatCents(row.BalanceCents, row.CurrencyCode),
-					)
-				}),
+				reminderRotation(
+					row,
+					func(ctx context.Context, link string) error {
+						return sendPaymentReminderEmail(
+							ctx,
+							d,
+							emailDataRegistration{
+								To:        row.Email,
+								FirstName: row.FirstName,
+								Link:      link,
+							},
+							api.FormatCents(row.BalanceCents, row.CurrencyCode),
+						)
+					},
+				),
 			)
 		},
 	}
@@ -48,7 +52,7 @@ func paymentRemindersJob(d deps) job[reminderRow] {
 
 func reminderRotation(
 	row reminderRow,
-	send func(link string) error,
+	send func(ctx context.Context, link string) error,
 ) rotation {
 	return rotation{
 		orderID:  row.ID,

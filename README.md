@@ -13,7 +13,7 @@ Course registration and admin CRM for DWB: public registration forms with Culqi 
 Requires Podman, Make, Go, Bun and uv.
 
 ```sh
-cp .env.example .local.env    # fill in SMTP and Culqi values
+cp .env.example .local.env    # fill in Zoho and Culqi values
 make tools              # goose, sqlc, golangci-lint, ansible
 make deps               # go mod tidy, sqlc generate, bun i
 make migrate_up         # creates local/db_data/main.db
@@ -44,7 +44,7 @@ make db_restore                  # database from the replica (optional TIMESTAMP
 | What | Where |
 |---|---|
 | App settings (hosts, CORS, timeouts, email, rate limits) | `config/<env>.yaml` (all keys in `config/example.yaml`) |
-| App secrets (SMTP, Culqi) | `.<env>.env` (`.local.env`, `.stage.env`, `.prod.env`) |
+| App secrets (Zoho, Culqi) | `.<env>.env` (`.local.env`, `.stage.env`, `.prod.env`) |
 | Server access, backups bucket, Dozzle login | `.deploy.<env>.env` |
 | Server sizing, monitor host, Litestream on/off | `infra/ansible/host_vars/<env>.yml` |
 

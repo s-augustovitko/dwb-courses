@@ -33,7 +33,7 @@ function personRows(form: PublicForm, person: Person): [string, string][] {
         person.emergencyContactEmail,
       ]
         .filter(Boolean)
-        .join(" · "),
+        .join(" - "),
     ],
   ];
 

@@ -21,6 +21,8 @@ import (
 	"dwb-courses/internal/countries"
 	"dwb-courses/internal/database"
 	"dwb-courses/internal/jobs"
+	"dwb-courses/internal/mail"
+	"dwb-courses/internal/mail/zoho"
 	"dwb-courses/internal/validate"
 )
 
@@ -66,13 +68,7 @@ func run() error {
 	}
 	defer logDeferredError(db.Close, "db shutdown error")
 
-	mailer, err := config.InitMailer(cfg)
-	if err != nil {
-		log.Error().Err(err).Msg("could not init mailer")
-
-		return err
-	}
-	defer logDeferredError(mailer.Close, "mailer shutdown error")
+	mailer := config.NewMailer(cfg, newEmailSender(cfg))
 
 	catalog, err := countries.Load()
 	if err != nil {
@@ -118,6 +114,10 @@ func startWorkers(srv server) func() {
 		cancel()
 		workers.Wait()
 	}
+}
+
+func newEmailSender(cfg *config.Config) mail.Sender {
+	return zoho.New(cfg.Zoho.BaseURL, cfg.Zoho.APIKey)
 }
 
 func newStorage() *ristretto.Storage {

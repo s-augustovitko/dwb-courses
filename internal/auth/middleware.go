@@ -38,8 +38,7 @@ func authorize(
 	}
 
 	// Recheck role and rotate the session, throttled by RefreshRate
-	needsRefresh := api.Now().
-		After(session.CreatedAt.Add(s.Cfg().Auth.RefreshRate))
+	needsRefresh := session.needsRefresh(s.Cfg().Auth.RefreshRate)
 	if needsRefresh {
 		role, err := refreshRole(c, s, session.UserID)
 		if err != nil {
@@ -55,7 +54,7 @@ func authorize(
 
 	if needsRefresh {
 		session.CreatedAt = api.Now()
-		if err := session.save(c, s); err != nil {
+		if err := session.rotate(c, s); err != nil {
 			return UserSession{}, api.Error(api.ErrorTypeUnexpected, err)
 		}
 	}

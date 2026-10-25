@@ -3,6 +3,7 @@ import { type Component, For, type JSX, splitProps } from "solid-js";
 export type SelectOption = {
   value: string;
   label: string;
+  disabled?: boolean;
 };
 
 type Props = {
@@ -53,6 +54,7 @@ export const Select: Component<Props> = (props) => {
               {(option) => (
                 <option
                   value={option.value}
+                  disabled={option.disabled}
                   selected={option.value === (props.value ?? "")}
                 >
                   {option.label}

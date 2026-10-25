@@ -160,7 +160,7 @@ export const DiscountsSection: Component<Props> = (props) => {
           { active },
         ),
       rollback: () => setDiscounts(previous),
-      successMessage: `Descuento ${active ? "restaurado" : "eliminado"}`,
+      successMessage: `Descuento ${active ? "habilitado" : "deshabilitado"}`,
       notify: notifications,
     });
   }

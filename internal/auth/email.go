@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/matcornic/hermes/v2"
@@ -17,6 +18,7 @@ type emailDataCreateUser struct {
 const createUserSubject = "¡Bienvenido a tu cuenta DWB Admin!"
 
 func sendCreateUserEmail(
+	ctx context.Context,
 	deps api.MailDeps,
 	userData emailDataCreateUser,
 ) error {
@@ -26,7 +28,7 @@ func sendCreateUserEmail(
 		return err
 	}
 
-	return api.SendEmail(deps, userData.Email, createUserSubject, body)
+	return api.SendEmail(ctx, deps, userData.Email, createUserSubject, body)
 }
 
 func buildCreateUserEmail(

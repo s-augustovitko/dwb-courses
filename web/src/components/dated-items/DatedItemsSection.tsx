@@ -175,7 +175,7 @@ export const DatedItemsSection: Component<Props> = (props) => {
           { active },
         ),
       rollback: () => setItems(previous),
-      successMessage: `${noun()} ${active ? "restaurada" : "eliminada"}`,
+      successMessage: `${noun()} ${active ? "habilitada" : "deshabilitada"}`,
       notify: notifications,
     });
   }

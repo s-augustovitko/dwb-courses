@@ -3,7 +3,7 @@ import { Icon, type Props } from "./Icon";
 
 export const IconInfo: Component<Props> = (props) => {
   return (
-    <Icon {...props}>
+    <Icon {...props} class={`darken-on-hover ${props.class ?? ""}`}>
       <svg
         viewBox="0 0 512 512"
         fill="currentColor"

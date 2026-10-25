@@ -103,8 +103,6 @@ github.com/vanng822/css v0.0.0-20190504095207-a21e860bcd04 h1:L0rPdfzq43+NV8rfIx
 github.com/vanng822/css v0.0.0-20190504095207-a21e860bcd04/go.mod h1:tcnB1voG49QhCrwq1W0w5hhGasvOg+VQp9i9H1rCM1w=
 github.com/vanng822/go-premailer v0.0.0-20191214114701-be27abe028fe h1:9YnI5plmy+ad6BM+JCLJb2ZV7/TNiE5l7SNKfumYKgc=
 github.com/vanng822/go-premailer v0.0.0-20191214114701-be27abe028fe/go.mod h1:JTFJA/t820uFDoyPpErFQ3rb3amdZoPtxcKervG0OE4=
-github.com/wneessen/go-mail v0.8.1 h1:tVcncj02/QySVFw3zr/kXOzZcuFQqBNT6K+Rbgm/pcM=
-github.com/wneessen/go-mail v0.8.1/go.mod h1:dWZ61zadzCIyvB4y1/YzC5O7MrbbzBfPkARmbosdf8w=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=
 github.com/x448/float16 v0.8.4/go.mod h1:14CWIYCyZA/cWjXOioeEpHeN/83MdbZDRQHoFcYsOfg=
 github.com/xyproto/randomstring v1.0.5 h1:YtlWPoRdgMu3NZtP45drfy1GKoojuR7hmRcnhZqKjWU=

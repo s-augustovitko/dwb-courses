@@ -52,14 +52,17 @@ type (
 		CookieName   string        `envconfig:"AUTH_COOKIE_NAME"    yaml:"cookie_name"`
 		RefreshRate  time.Duration `envconfig:"AUTH_REFRESH_RATE"   yaml:"refresh_rate"`
 
+		RotationGrace time.Duration `envconfig:"AUTH_ROTATION_GRACE" yaml:"rotation_grace"`
+
 		MaxConcurrentHashes int `envconfig:"AUTH_MAX_CONCURRENT_HASHES" yaml:"max_concurrent_hashes"`
 	}
 
 	email struct {
+		From         string `envconfig:"EMAIL_FROM"         yaml:"from"`
 		Name         string `envconfig:"EMAIL_NAME"         yaml:"name"`
 		Reply        string `envconfig:"EMAIL_REPLY"        yaml:"reply"`
 		Link         string `envconfig:"EMAIL_LINK"         yaml:"link"`
-		Logo         string `envconfig:"EMAIL_LOGO"         yaml:"logo"`
+		Header       string `envconfig:"EMAIL_HEADER"       yaml:"header"`
 		Copyright    string `envconfig:"EMAIL_COPYRIGHT"    yaml:"copyright"`
 		Troubleshoot string `envconfig:"EMAIL_TROUBLESHOOT" yaml:"troubleshoot"`
 
@@ -74,12 +77,9 @@ type (
 		AdminPath string `envconfig:"TEMPLATES_ADMIN_PATH" yaml:"admin_path"`
 	}
 
-	smtp struct {
-		From string `envconfig:"SMTP_FROM" yaml:"from"`
-		Host string `envconfig:"SMTP_HOST" yaml:"host"`
-		User string `envconfig:"SMTP_USER" yaml:"user"`
-		Pass string `envconfig:"SMTP_PASS" yaml:"pass"`
-		Port int    `envconfig:"SMTP_PORT" yaml:"port"`
+	zoho struct {
+		BaseURL string `envconfig:"ZOHO_BASE_URL" yaml:"base_url"`
+		APIKey  string `envconfig:"ZOHO_API_KEY"  yaml:"api_key"`
 	}
 
 	culqi struct {
@@ -121,7 +121,7 @@ type (
 	Config struct {
 		Email        email        `yaml:"email"`
 		Templates    templates    `yaml:"templates"`
-		SMTP         smtp         `yaml:"smtp"`
+		Zoho         zoho         `yaml:"zoho"`
 		Service      service      `yaml:"service"`
 		Auth         auth         `yaml:"auth"`
 		Cors         cors         `yaml:"cors"`
@@ -179,7 +179,10 @@ func Load(configPath string) (*Config, error) {
 	return cfg, nil
 }
 
-const defaultCulqiBaseURL = "https://api.culqi.com/v2"
+const (
+	defaultCulqiBaseURL = "https://api.culqi.com/v2"
+	defaultZohoBaseURL  = "https://cpaas.zoho.com/v1.1"
+)
 
 // defaultConfig holds the values used when neither YAML nor env sets them.
 //
@@ -209,6 +212,8 @@ func defaultConfig() *Config {
 			CookieName:   "__Host-session",
 			RefreshRate:  15 * time.Minute,
 
+			RotationGrace: 30 * time.Second,
+
 			MaxConcurrentHashes: 1,
 		},
 		Email:     email{Greeting: "Hola", Signature: "Atentamente"},
@@ -223,6 +228,7 @@ func defaultConfig() *Config {
 			MaxEmailAttempts: 7,
 		},
 		Culqi:        culqi{BaseURL: defaultCulqiBaseURL},
+		Zoho:         zoho{BaseURL: defaultZohoBaseURL},
 		Registration: registration{MaxDonationCents: 1000000},
 		RateLimit: rateLimit{
 			GlobalIP:             300,
@@ -252,26 +258,25 @@ func validateRequired(cfg *Config) error {
 		{len(cfg.Cors.Origins) != 0, "cors.origins"},
 
 		{cfg.Auth.MaxConcurrentHashes > 0, "auth.max_concurrent_hashes"},
+		{cfg.Auth.RotationGrace > 0, "auth.rotation_grace"},
 
 		{cfg.Timeout.Sm > 0, "timeout.sm"},
 		{cfg.Timeout.Md > 0, "timeout.md"},
 		{cfg.Timeout.Lg > 0, "timeout.lg"},
 		{cfg.Jobs.Timeout > 0, "jobs.timeout"},
 
+		{cfg.Email.From != "", "email.from"},
 		{cfg.Email.Reply != "", "email.reply"},
 		{cfg.Email.Copyright != "", "email.copyright"},
 		{cfg.Email.Link != "", "email.link"},
 		{cfg.Email.Name != "", "email.name"},
-		{cfg.Email.Logo != "", "email.logo"},
+		{cfg.Email.Header != "", "email.header"},
 		{cfg.Email.Troubleshoot != "", "email.troubleshoot"},
 
 		{cfg.Templates.PrimaryColor != "", "templates.primary_color"},
 
-		{cfg.SMTP.From != "", "smtp.from"},
-		{cfg.SMTP.Host != "", "smtp.host"},
-		{cfg.SMTP.User != "", "smtp.user"},
-		{cfg.SMTP.Port != 0, "smtp.port"},
-		{cfg.SMTP.Pass != "", "SMTP_PASS"},
+		{cfg.Zoho.BaseURL != "", "zoho.base_url"},
+		{cfg.Zoho.APIKey != "", "ZOHO_API_KEY"},
 
 		{cfg.DefaultUser.Email != "", "default_user.email"},
 		{cfg.DefaultUser.Name != "", "default_user.name"},

@@ -1,8 +1,9 @@
 import { type Component, For, Show } from "solid-js";
+import { HintIcon } from "~/components/global";
 import { IconTrash } from "~/components/icons";
 import type { Cart, CartLine } from "~/models";
 import { formatCents } from "~/utils";
-import { sumCents } from "./pricing";
+import { discountTitle, sumCents } from "./pricing";
 
 /** A discount is a saving for the person (green), a refund is money given back (red). */
 export type Minus = "discount" | "refund";
@@ -41,7 +42,12 @@ const LineRows: Component<{
     <For each={props.lines}>
       {(line) => (
         <tr>
-          <td class="wrap-anywhere">{line.name}</td>
+          <td class="wrap-anywhere">
+            <span class="icon-text">
+              <span>{discountTitle(line)}</span>
+              <HintIcon hint={line.hintText} />
+            </span>
+          </td>
           <Amount
             cents={line.amountCents}
             currency={props.currency}
@@ -78,7 +84,11 @@ const SubtotalRow: Component<{ order: OrderLines }> = (props) => (
   <tr>
     <td>Subtotal</td>
     <Amount
-      cents={props.order.totalCents + sumCents(props.order.discounts)}
+      cents={
+        props.order.totalCents +
+        sumCents(props.order.discounts) -
+        props.order.donationCents
+      }
       currency={props.order.currencyCode}
     />
     <td />
@@ -88,7 +98,7 @@ const SubtotalRow: Component<{ order: OrderLines }> = (props) => (
 export const OrderTable: Component<{
   order: OrderLines;
   totalLabel?: string;
-  /** Collapses sessions, meals and the donation into a single subtotal row. */
+  /** Collapses sessions and meals into a single subtotal row. */
   summary?: boolean;
   /** Adds paid and pending rows when something was paid. */
   paidCents?: number;
@@ -111,21 +121,21 @@ export const OrderTable: Component<{
             lines={props.order.meals}
             currency={props.order.currencyCode}
           />
-          <Show when={props.order.donationCents > 0}>
-            <tr>
-              <th colSpan={3} class="has-background-light is-size-7">
-                Donación
-              </th>
-            </tr>
-            <tr>
-              <td>Donación</td>
-              <Amount
-                cents={props.order.donationCents}
-                currency={props.order.currencyCode}
-              />
-              <td />
-            </tr>
-          </Show>
+        </Show>
+        <Show when={props.order.donationCents > 0}>
+          <tr>
+            <th colSpan={3} class="has-background-light is-size-7">
+              Donación
+            </th>
+          </tr>
+          <tr>
+            <td>Donación</td>
+            <Amount
+              cents={props.order.donationCents}
+              currency={props.order.currencyCode}
+            />
+            <td />
+          </tr>
         </Show>
         <LineRows
           title="Descuentos"

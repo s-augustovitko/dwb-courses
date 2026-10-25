@@ -1,12 +1,13 @@
 package api
 
 import (
-	"bytes"
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/matcornic/hermes/v2"
-	"github.com/wneessen/go-mail"
+
+	"dwb-courses/internal/mail"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 	// QRMarker is replaced by the embedded QR image when content carries one.
 	QRMarker = "[[QR]]"
 
-	qrContentID = "<qr>"
+	qrContentID = "qr"
 	qrImageHTML = `<img src="cid:qr" alt="Código QR" width="240" ` +
 		`height="240" style="display:block;margin:0 auto" />`
 )
@@ -36,13 +37,18 @@ type EmailContent struct {
 }
 
 // SendRegistrationEmail renders content with the email template and sends it.
-func SendRegistrationEmail(deps MailDeps, content EmailContent) error {
+func SendRegistrationEmail(
+	ctx context.Context,
+	deps MailDeps,
+	content EmailContent,
+) error {
 	html, err := renderRegistrationEmail(deps, content)
 	if err != nil {
 		return err
 	}
 
 	return sendMailMessage(
+		ctx,
 		deps,
 		content.To,
 		content.Subject,
@@ -115,45 +121,38 @@ func emailActions(deps MailDeps, content EmailContent) []hermes.Action {
 }
 
 // SendEmail sends an html email based on the to, subject and body.
-func SendEmail(deps MailDeps, to, subject, body string) error {
-	return sendMailMessage(deps, to, subject, body, nil)
-}
-
-func sendMailMessage(deps MailDeps, to, subject, body string, qr []byte) error {
-	message, err := buildEmailMessage(deps, to, subject, body)
-	if err != nil {
-		return err
-	}
-
-	if qr != nil {
-		err = message.EmbedReader(
-			"qr.png",
-			bytes.NewReader(qr),
-			mail.WithFileContentID(qrContentID),
-		)
-		if err != nil {
-			return err
-		}
-	}
-
-	return deps.Mailer().DialAndSend(message)
-}
-
-func buildEmailMessage(
+func SendEmail(
+	ctx context.Context,
 	deps MailDeps,
 	to, subject, body string,
-) (*mail.Msg, error) {
-	message := mail.NewMsg()
-	if err := message.From(deps.Cfg().SMTP.From); err != nil {
-		return nil, err
+) error {
+	return sendMailMessage(ctx, deps, to, subject, body, nil)
+}
+
+func sendMailMessage(
+	ctx context.Context,
+	deps MailDeps,
+	to, subject, body string,
+	qr []byte,
+) error {
+	return deps.Mailer().Send(ctx, mail.Message{
+		From:         deps.Cfg().Email.From,
+		To:           to,
+		Subject:      subject,
+		HTML:         body,
+		InlineImages: qrInlineImages(qr),
+	})
+}
+
+func qrInlineImages(qr []byte) []mail.InlineImage {
+	if qr == nil {
+		return nil
 	}
 
-	if err := message.To(to); err != nil {
-		return nil, err
-	}
-
-	message.Subject(subject)
-	message.SetBodyString(mail.TypeTextHTML, body)
-
-	return message, nil
+	return []mail.InlineImage{{
+		CID:      qrContentID,
+		Name:     "qr.png",
+		MimeType: "image/png",
+		Content:  qr,
+	}}
 }

@@ -49,6 +49,7 @@ func (s server) LogIn(c fiber.Ctx) error {
 		CreatedAt: api.Now(),
 		UserAgent: c.UserAgent(),
 		IP:        c.IP(),
+		Rotated:   false,
 	}
 
 	if err := session.save(c, s); err != nil {

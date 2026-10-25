@@ -82,6 +82,7 @@ type UserSession struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UserAgent string    `json:"userAgent"`
 	IP        string    `json:"ip"`
+	Rotated   bool      `json:"rotated"`
 }
 
 // GetSessionLocals returns the session stored in fiber locals.
@@ -130,17 +131,45 @@ func (sess UserSession) isValid(c fiber.Ctx) bool {
 	return sess.Role.hasPermission(PermissionRead)
 }
 
-// save stores the user session in cookies, storage and locals. If a concurrent
-// request already rotated this session's token, save is a no-op.
+func (sess UserSession) needsRefresh(refreshRate time.Duration) bool {
+	return !sess.Rotated && api.Now().After(sess.CreatedAt.Add(refreshRate))
+}
+
+// save starts the session under a new token, revoking the cookie's old one.
 func (sess UserSession) save(c fiber.Ctx, srv api.Server) error {
+	_ = revokeSession(c, srv)
+
+	return sess.storeWithNewToken(c, srv)
+}
+
+func (sess UserSession) rotate(c fiber.Ctx, srv api.Server) error {
 	oldToken := utils.CopyString(c.Cookies(srv.Cfg().Auth.CookieName))
 
 	lock := rotateLockFor(oldToken)
 	lock.Lock()
 	defer lock.Unlock()
 
-	_ = revokeSession(c, srv)
+	stored, err := getSessionCookie(c, srv)
+	if err == nil && stored.Rotated {
+		return nil
+	}
 
+	if err := sess.storeWithNewToken(c, srv); err != nil {
+		return err
+	}
+
+	sess.Rotated = true
+
+	sessionData, err := json.Marshal(sess)
+	if err != nil {
+		return err
+	}
+
+	return srv.Storage().
+		Set(tokenKey(oldToken), sessionData, srv.Cfg().Auth.RotationGrace)
+}
+
+func (sess UserSession) storeWithNewToken(c fiber.Ctx, srv api.Server) error {
 	name := srv.Cfg().Auth.CookieName
 	token := utils.GenerateSecureToken(sessionTokenLength)
 	maxAge := srv.Cfg().Auth.CookieMaxAge

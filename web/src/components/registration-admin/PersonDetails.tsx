@@ -26,7 +26,7 @@ function personRows(reg: StaffRegistration): [string, string][] {
         reg.emergencyContactEmail,
       ]
         .filter(Boolean)
-        .join(" · "),
+        .join(" - "),
     ],
   ];
 

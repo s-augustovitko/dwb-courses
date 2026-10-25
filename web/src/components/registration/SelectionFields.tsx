@@ -14,12 +14,7 @@ import {
   For,
   Show,
 } from "solid-js";
-import {
-  MoneyInput,
-  RadioGroup,
-  Select,
-  SwitchGroup,
-} from "~/components/global";
+import { HintIcon, RadioGroup, Select, SwitchGroup } from "~/components/global";
 import {
   dietaryOptions,
   type PublicCurrency,
@@ -47,8 +42,12 @@ type Mode = "NONE" | "ALL" | "DAY" | "EACH";
 const dayKey = (option: PublicOption) =>
   dayjs(option.date).format("YYYY-MM-DD");
 
+const MODE_PLACEHOLDER = { value: "", label: "Seleccione...", disabled: true };
+
 const OptionList: Component<{
+  of: FormStore<SelectionValues>;
   name: string;
+  modeName: "sessionMode" | "mealMode";
   label: string;
   modes: { value: Mode; label: string }[];
   withTime: boolean;
@@ -56,14 +55,9 @@ const OptionList: Component<{
   chosen: string[];
   currencyCode: string;
   error?: string;
-  defaultMode?: Mode;
   onChange: (ids: string[]) => void;
 }> = (props) => {
-  const [mode, setMode] = createSignal(
-    props.defaultMode && props.chosen.length === 0
-      ? props.defaultMode
-      : props.modes[0].value,
-  );
+  const mode = () => (getValue(props.of, props.modeName) ?? "") as Mode | "";
   const [days, setDays] = createSignal<string[]>([]);
 
   const switches = createMemo(() =>
@@ -89,6 +83,7 @@ const OptionList: Component<{
 
   const target = () => {
     switch (mode()) {
+      case "":
       case "NONE":
         return [];
       case "ALL":
@@ -112,14 +107,21 @@ const OptionList: Component<{
 
   return (
     <>
-      <Select
-        name={`${props.name}Mode`}
-        label={props.label}
-        options={props.modes}
-        value={mode()}
-        error={mode() === "NONE" || mode() === "ALL" ? props.error : undefined}
-        onChange={(e) => setMode(e.currentTarget.value as Mode)}
-      />
+      <Field of={props.of} name={props.modeName}>
+        {(field, fieldProps) => (
+          <Select
+            {...fieldProps}
+            value={field.value}
+            error={
+              field.error ||
+              (mode() === "NONE" || mode() === "ALL" ? props.error : undefined)
+            }
+            required
+            label={props.label}
+            options={[MODE_PLACEHOLDER, ...props.modes]}
+          />
+        )}
+      </Field>
 
       <Show when={mode() === "DAY"}>
         <SwitchGroup
@@ -209,7 +211,9 @@ export const SelectionFields: Component<Props> = (props) => {
         <Field of={props.of} name="sessionIds" type="string[]">
           {(field) => (
             <OptionList
+              of={props.of}
               name="sessionIds"
+              modeName="sessionMode"
               label="Sesiones"
               modes={[
                 { value: "EACH", label: "Por sesión" },
@@ -221,7 +225,6 @@ export const SelectionFields: Component<Props> = (props) => {
               chosen={field.value ?? []}
               currencyCode={currencyCode()}
               error={field.error}
-              defaultMode="ALL"
               onChange={(ids) => setValue(props.of, "sessionIds", ids)}
             />
           )}
@@ -234,7 +237,9 @@ export const SelectionFields: Component<Props> = (props) => {
         <Field of={props.of} name="mealIds" type="string[]">
           {(field) => (
             <OptionList
+              of={props.of}
               name="mealIds"
+              modeName="mealMode"
               label="Comidas"
               modes={[
                 { value: "NONE", label: "Sin comidas" },
@@ -267,19 +272,6 @@ export const SelectionFields: Component<Props> = (props) => {
         </Field>
       </Show>
 
-      <Show when={!props.form.disableDonation}>
-        <Field of={props.of} name="donationText">
-          {(field, fieldProps) => (
-            <MoneyInput
-              {...fieldProps}
-              value={field.value}
-              error={field.error}
-              label="Donación (opcional)"
-            />
-          )}
-        </Field>
-      </Show>
-
       <h3 class="title is-4 mt-5 mb-2">Resumen</h3>
 
       <OrderTable order={order()} totalLabel="Total estimado" summary />
@@ -287,8 +279,9 @@ export const SelectionFields: Component<Props> = (props) => {
       <div class="notification is-light">
         <For each={estimate().missed}>
           {(missed) => (
-            <p class="help is-warning">
-              {discountHint(missed, currencyCode())}
+            <p class="help is-warning icon-text">
+              <span>{discountHint(missed, currencyCode())}</span>
+              <HintIcon hint={missed.discount.hintText} />
             </p>
           )}
         </For>
