@@ -15,12 +15,11 @@ import (
 )
 
 const (
-	minChargeCents     = 300
-	maxChargeCents     = 999900
-	maxGatewayEmailLen = 50
-	minGatewayNameLen  = 2
-	descriptionPrefix  = "Inscripción "
-	chargeTimeout      = 12 * time.Second
+	minChargeCents    = 300
+	maxChargeCents    = 999900
+	minGatewayNameLen = 2
+	descriptionPrefix = "Inscripción "
+	chargeTimeout     = 12 * time.Second
 
 	payStatusPaid       = "PAID"
 	payStatusNeedsAuth  = "REQUIRES_AUTHENTICATION"
@@ -225,8 +224,7 @@ func payableStatus(status string, formEnabled bool) bool {
 }
 
 func gatewayAcceptsPayer(sub database.Submission) bool {
-	return len(sub.Email) <= maxGatewayEmailLen &&
-		utf8.RuneCountInString(sub.FirstName) >= minGatewayNameLen &&
+	return utf8.RuneCountInString(sub.FirstName) >= minGatewayNameLen &&
 		utf8.RuneCountInString(sub.LastName) >= minGatewayNameLen
 }
 
@@ -262,7 +260,19 @@ func (s server) chargeOnline(
 	)
 	defer cancel()
 
-	result, err := s.gateway.Charge(chargeCtx, newChargeRequest(attempt, body))
+	payerEmail, err := s.gateway.TokenEmail(chargeCtx, body.TokenID)
+	if err != nil {
+		logger.Error().
+			Err(err).
+			Msg("could not read the payer email from the card token")
+
+		return unconfirmed(payStatusFailed, messageFailed)
+	}
+
+	result, err := s.gateway.Charge(
+		chargeCtx,
+		newChargeRequest(attempt, body, payerEmail),
+	)
 
 	switch {
 	case errors.Is(err, payments.ErrOutcomeUnknown):
@@ -290,11 +300,12 @@ func (s server) chargeOnline(
 func newChargeRequest(
 	attempt payAttempt,
 	body payRequest,
+	payerEmail string,
 ) payments.ChargeRequest {
 	request := payments.ChargeRequest{
 		AmountCents:  attempt.balance,
 		CurrencyCode: attempt.order.CurrencyCode,
-		Email:        attempt.sub.Email,
+		Email:        payerEmail,
 		TokenID:      body.TokenID,
 		Description:  descriptionPrefix + attempt.title,
 		OrderID:      attempt.orderText,

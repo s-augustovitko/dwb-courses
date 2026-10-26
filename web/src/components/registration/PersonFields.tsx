@@ -1,7 +1,8 @@
 import { Field, type FormStore, toUpperCase } from "@modular-forms/solid";
 import { type Component, type ComponentProps, Show } from "solid-js";
-import { Input, Select } from "~/components/global";
+import { DatePicker, Input, Select } from "~/components/global";
 import type { PublicCountry, PublicForm } from "~/models";
+import { calendarDateToLocal } from "~/utils";
 import { type PersonValues, travelDateRange } from "./validation";
 
 type Props = {
@@ -25,10 +26,11 @@ const DigitsInput: Component<ComponentProps<typeof Input>> = (props) => (
 );
 
 export const PersonFields: Component<Props> = (props) => {
-  const dateRange = () =>
-    props.allowStoredDates
-      ? { min: undefined, max: undefined }
-      : travelDateRange();
+  const dateRange = () => {
+    if (props.allowStoredDates) return { min: undefined, max: undefined };
+    const { min, max } = travelDateRange();
+    return { min: calendarDateToLocal(min), max: calendarDateToLocal(max) };
+  };
 
   const idTypeOptions = () => [
     { value: "", label: "Selecciona" },
@@ -41,7 +43,7 @@ export const PersonFields: Component<Props> = (props) => {
   const countryOptions = () =>
     props.countries.map((country) => ({
       value: country.dialCode,
-      label: `(${country.dialCode}) ${country.name}`,
+      label: `${country.name} (${country.dialCode})`,
     }));
 
   return (
@@ -158,14 +160,13 @@ export const PersonFields: Component<Props> = (props) => {
           <div class="cell">
             <Field of={props.of} name="arrivalDate">
               {(field, fieldProps) => (
-                <Input
+                <DatePicker
                   {...fieldProps}
                   value={field.value}
                   error={field.error}
                   label="Fecha de llegada (opcional)"
-                  type="date"
-                  min={dateRange().min}
-                  max={dateRange().max}
+                  minDate={dateRange().min}
+                  maxDate={dateRange().max}
                 />
               )}
             </Field>
@@ -173,14 +174,13 @@ export const PersonFields: Component<Props> = (props) => {
           <div class="cell">
             <Field of={props.of} name="departureDate">
               {(field, fieldProps) => (
-                <Input
+                <DatePicker
                   {...fieldProps}
                   value={field.value}
                   error={field.error}
                   label="Fecha de salida (opcional)"
-                  type="date"
-                  min={dateRange().min}
-                  max={dateRange().max}
+                  minDate={dateRange().min}
+                  maxDate={dateRange().max}
                 />
               )}
             </Field>

@@ -29,13 +29,22 @@ type chargeBody struct {
 	Metadata          map[string]string      `json:"metadata"`
 }
 
+type outcomeResponse struct {
+	Type string `json:"type"`
+}
+
 type chargeResponse struct {
-	ID           string         `json:"id"`
-	Paid         bool           `json:"paid"`
-	Amount       int64          `json:"amount"`
-	CurrencyCode string         `json:"currency_code"`
-	Currency     string         `json:"currency"`
-	Metadata     map[string]any `json:"metadata"`
+	ID           string          `json:"id"`
+	Outcome      outcomeResponse `json:"outcome"`
+	Capture      bool            `json:"capture"`
+	Amount       int64           `json:"amount"`
+	CurrencyCode string          `json:"currency_code"`
+	Currency     string          `json:"currency"`
+	Metadata     map[string]any  `json:"metadata"`
+}
+
+func (r chargeResponse) succeeded() bool {
+	return r.Capture && r.Outcome.Type == successfulSaleType
 }
 
 // currency returns currency_code, falling back to currency when the body only
@@ -56,4 +65,8 @@ type errorResponse struct {
 	Type        string `json:"type"`
 	Code        string `json:"code"`
 	UserMessage string `json:"user_message"`
+}
+
+type tokenResponse struct {
+	Email string `json:"email"`
 }

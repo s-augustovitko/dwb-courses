@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import * as v from "valibot";
 import { dietaryOptions, type PublicForm, type PublicIdType } from "~/models";
 import {
@@ -10,6 +11,7 @@ import {
   optionalMoneyField,
   optionalText,
   REQUIRED,
+  toBackendDate,
 } from "~/utils";
 
 export const NO_SESSION_ERROR = "Selecciona al menos una sesión";
@@ -100,12 +102,12 @@ export function travelDateRange(now = new Date()): {
   max.setUTCFullYear(max.getUTCFullYear() + TRAVEL_YEARS_FORWARD);
 
   return {
-    min: min.toISOString().slice(0, 10),
-    max: max.toISOString().slice(0, 10),
+    min: toBackendDate(dayjs.utc(min)),
+    max: toBackendDate(dayjs.utc(max)),
   };
 }
 
-/** Travel dates already saved on the registration (yyyy-mm-dd); staff may keep them unchanged. */
+/** Travel dates already saved on the registration, as DatePicker values; staff may keep them unchanged. */
 export type StoredTravelDates = { arrivalDate: string; departureDate: string };
 
 // Like travelDateAllowed in internal/registration/person.go: an unchanged stored date skips the window.

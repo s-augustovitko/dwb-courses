@@ -47,7 +47,7 @@ export function formatShortDate(date?: dayjs.ConfigType, utc = false): string {
 }
 
 export function dateToDateInput(date: string | null): string {
-  return date ? dayjs.utc(date).format("YYYY-MM-DD") : "";
+  return date ? toBackendDate(dayjs.utc(date)) : "";
 }
 
 export function dateInputToUnix(date: string): number | null {

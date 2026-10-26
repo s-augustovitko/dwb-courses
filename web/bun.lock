@@ -9,6 +9,7 @@
         "@modular-forms/solid": "0.25.1",
         "@solidjs/router": "^0.15.0",
         "bulma": "^1.0.4",
+        "chartist": "2.2.0",
         "dayjs": "^1.11.21",
         "qrcode": "^1.5.4",
         "solid-js": "^1.9.9",
@@ -313,6 +314,8 @@
     "camelcase": ["camelcase@5.3.1", "", {}, "sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg=="],
 
     "caniuse-lite": ["caniuse-lite@1.0.30001810", "", {}, "sha512-TITQPUkaz+aVk5GL6NhOdwk1aEaNTSDPsGFWrTuhKGtjTF70jL/Oht2W4c6rXUe5fu7Ie19VIahAXHIIiWWNeg=="],
+
+    "chartist": ["chartist@2.2.0", "", {}, "sha512-B3OUXchU0hdaDQ1CaAs0sMz2X3GeKSIiO3OmKtQ55hz4NLTkGhLYEgOQGF2hcDhZtAzrAAje+oG3MnOOk6DBFQ=="],
 
     "cliui": ["cliui@6.0.0", "", { "dependencies": { "string-width": "^4.2.0", "strip-ansi": "^6.0.0", "wrap-ansi": "^6.2.0" } }, "sha512-t6wbgtoCXvAzst7QgXxJYqPt0usEfbgQdftEPbLL/cvv6HPE5VgvqCuAIDR0NgU52ds6rFwqrgakNLrHEjCbrQ=="],
 

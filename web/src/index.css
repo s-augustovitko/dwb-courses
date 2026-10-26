@@ -57,6 +57,10 @@
   overflow-wrap: anywhere;
 }
 
+.no-wrap {
+  white-space: nowrap;
+}
+
 .keep-line-breaks {
   white-space: pre-line;
 }

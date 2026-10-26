@@ -8,6 +8,7 @@ import {
   onCleanup,
   Show,
 } from "solid-js";
+import { fetchAllForms, toFormOption } from "~/components/forms";
 import {
   Input,
   MultiSelect,
@@ -20,7 +21,7 @@ import {
   RegistrationTable,
   STATUS_OPTIONS,
 } from "~/components/registration-admin";
-import type { FormListItem, RegistrationList } from "~/models";
+import type { RegistrationList } from "~/models";
 import { useSession } from "~/stores";
 import { Method, request, toggleValue } from "~/utils";
 
@@ -35,15 +36,6 @@ type Filters = { formId?: string; status?: string; q?: string; page?: string };
 /** Zero-based; hand-edited values are clamped to what the server accepts. */
 const toPage = (raw: string | undefined) =>
   Math.min(Math.max(Math.trunc(Number(raw ?? "0")) || 0, 0), MAX_PAGE);
-
-const fetchForms = (enabled: "true" | "false") =>
-  request<FormListItem[]>("form", Method.GET, { enabled });
-
-// Registrations outlive their form being disabled, so offer both: active first.
-const fetchAllForms = () =>
-  Promise.all([fetchForms("true"), fetchForms("false")]).then((lists) =>
-    lists.flat(),
-  );
 
 const fetchRegistrations = (filters: Filters) =>
   request<RegistrationList>("registration", Method.GET, {
@@ -71,13 +63,7 @@ const AdminRegistrationsView: Component = () => {
   const page = () => toPage(params.page);
   const statuses = () => (params.status ? params.status.split(",") : []);
   const hasFilters = () => Boolean(params.formId || params.status || params.q);
-  const formOptions = () => [
-    ALL_FORMS,
-    ...(forms() ?? []).map((form) => ({
-      value: form.id,
-      label: form.isEnabled ? form.title : `${form.title} (inactivo)`,
-    })),
-  ];
+  const formOptions = () => [ALL_FORMS, ...(forms() ?? []).map(toFormOption)];
 
   // Follows back/forward; our own debounced writes are trimmed, so they already match.
   createEffect(

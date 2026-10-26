@@ -17,6 +17,8 @@ export const StatusTag: Component<{ status: RegistrationStatus }> = (props) => (
   </span>
 );
 
+export const statusText = (status: RegistrationStatus) => LABELS[status].text;
+
 export const STATUS_OPTIONS = (Object.keys(LABELS) as RegistrationStatus[]).map(
   (value) => ({ value, label: LABELS[value].text }),
 );

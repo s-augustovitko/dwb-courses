@@ -14,7 +14,7 @@ export const Amount: Component<{
   minus?: Minus;
 }> = (props) => (
   <td
-    class="has-text-right"
+    class="has-text-right no-wrap"
     classList={{
       "has-text-success": props.minus === "discount",
       "has-text-danger": props.minus === "refund",
@@ -148,7 +148,7 @@ export const OrderTable: Component<{
       <tfoot>
         <tr>
           <th>{props.totalLabel ?? "Total"}</th>
-          <th class="has-text-right">
+          <th class="has-text-right no-wrap">
             {formatCents(props.order.currencyCode, props.order.totalCents)}
           </th>
           <th />
@@ -163,7 +163,7 @@ export const OrderTable: Component<{
               </tr>
               <tr>
                 <th>Saldo pendiente</th>
-                <th class="has-text-right">
+                <th class="has-text-right no-wrap">
                   {formatCents(
                     props.order.currencyCode,
                     props.order.totalCents - paid(),

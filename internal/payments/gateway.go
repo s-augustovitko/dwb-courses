@@ -63,6 +63,7 @@ type Gateway interface {
 	Provider() string
 	ValidTokenID(id string) bool
 	ValidChargeID(id string) bool
+	TokenEmail(ctx context.Context, tokenID string) (string, error)
 	Charge(ctx context.Context, request ChargeRequest) (ChargeResult, error)
 	GetCharge(ctx context.Context, chargeID string) (ChargeDetails, error)
 }

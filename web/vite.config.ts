@@ -9,6 +9,10 @@ export default defineConfig({
       "~": path.resolve(__dirname, "./src"),
     },
   },
+  // The devtools plugin injects this import, so the startup scan misses it and Vite re-optimizes mid-session.
+  optimizeDeps: {
+    include: ["solid-devtools/setup"],
+  },
   server: {
     host: "0.0.0.0",
     port: 3000,

@@ -54,7 +54,7 @@ export const DatedItemTable: Component<Props> = (props) => (
                   ? formatDateTime(item.date)
                   : formatCalendarDate(item.date)}
               </td>
-              <td>{priceDisplay(item, props.currencies)}</td>
+              <td class="no-wrap">{priceDisplay(item, props.currencies)}</td>
               <Show when={props.canWrite}>
                 <td>
                   <div class="buttons">

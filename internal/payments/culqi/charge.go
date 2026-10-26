@@ -16,6 +16,7 @@ const (
 	// maxCustomerNameRunes is the antifraud name limit Culqi documents (2-50).
 	maxCustomerNameRunes = 50
 	reviewActionCode     = "REVIEW"
+	successfulSaleType   = "venta_exitosa"
 	cardErrorType        = "card_error"
 	maxUserMessageRunes  = 200
 	maxDescriptionRunes  = 80
@@ -117,7 +118,7 @@ func (c *Client) GetCharge(
 
 	return payments.ChargeDetails{
 		ID:           charge.ID,
-		Paid:         charge.Paid,
+		Paid:         charge.succeeded(),
 		AmountCents:  charge.Amount,
 		CurrencyCode: charge.currency(),
 		OrderID:      orderID,
@@ -164,8 +165,8 @@ func newChargeBody(request payments.ChargeRequest) chargeBody {
 	return body
 }
 
-// parseCreated reads a 201: it counts as paid only when the body says paid for
-// exactly what was requested.
+// parseCreated reads a 201: it counts as paid only when the body reports a
+// successful sale for exactly what was requested.
 func (c *Client) parseCreated(
 	raw []byte,
 	request payments.ChargeRequest,
@@ -175,7 +176,7 @@ func (c *Client) parseCreated(
 		return payments.ChargeResult{}, payments.ErrOutcomeUnknown
 	}
 
-	confirmed := charge.Paid &&
+	confirmed := charge.succeeded() &&
 		request.AmountCents > 0 &&
 		c.ValidChargeID(charge.ID) &&
 		charge.Amount == request.AmountCents &&

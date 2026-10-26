@@ -4,15 +4,7 @@ type Props = {
   label?: string;
   hint?: string;
   error?: string;
-  type?:
-    | "date"
-    | "datetime-local"
-    | "email"
-    | "number"
-    | "password"
-    | "tel"
-    | "text"
-    | "time";
+  type?: "email" | "number" | "password" | "tel" | "text";
   inputmode?:
     | "decimal"
     | "email"

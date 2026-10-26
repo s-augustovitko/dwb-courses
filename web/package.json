@@ -12,6 +12,7 @@
     "@modular-forms/solid": "0.25.1",
     "@solidjs/router": "^0.15.0",
     "bulma": "^1.0.4",
+    "chartist": "2.2.0",
     "dayjs": "^1.11.21",
     "qrcode": "^1.5.4",
     "solid-js": "^1.9.9",

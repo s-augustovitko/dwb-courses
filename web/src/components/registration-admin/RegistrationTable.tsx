@@ -1,9 +1,9 @@
 import { A, useNavigate } from "@solidjs/router";
-import dayjs from "dayjs";
 import { type Component, For, Show } from "solid-js";
 import { LinesSkeleton } from "~/components/layout";
+import { Amount } from "~/components/registration";
 import type { RegistrationListItem } from "~/models";
-import { formatCents } from "~/utils";
+import { formatCents, formatShortDate } from "~/utils";
 import { StatusTag } from "./StatusTag";
 
 const TABLE_COLUMNS = 7;
@@ -71,10 +71,8 @@ export const RegistrationTable: Component<{
                 <td>
                   <StatusTag status={item.status} />
                 </td>
-                <td class="has-text-right">
-                  {formatCents(item.currencyCode, item.totalCents)}
-                </td>
-                <td class="has-text-right">
+                <Amount cents={item.totalCents} currency={item.currencyCode} />
+                <td class="has-text-right no-wrap">
                   <Show
                     when={balanceCents(item) > 0 && item.status !== "CANCELLED"}
                     fallback={<span class="has-text-grey">—</span>}
@@ -84,7 +82,7 @@ export const RegistrationTable: Component<{
                     </span>
                   </Show>
                 </td>
-                <td>{dayjs(item.createdAt).format("L")}</td>
+                <td>{formatShortDate(item.createdAt)}</td>
               </tr>
             )}
           </For>

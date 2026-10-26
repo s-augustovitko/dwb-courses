@@ -9,6 +9,7 @@ import (
 	"dwb-courses/internal/config"
 	"dwb-courses/internal/countries"
 	"dwb-courses/internal/currency"
+	"dwb-courses/internal/dashboard"
 	"dwb-courses/internal/discount"
 	"dwb-courses/internal/forms"
 	"dwb-courses/internal/idtypes"
@@ -47,6 +48,7 @@ func registerRoutes(
 	auth.Router(router, srv)
 	user.Router(router, srv)
 	currency.Router(router, srv)
+	dashboard.Router(router, srv)
 	idtypes.Router(router, srv)
 	forms.Router(router, srv)
 	discount.Router(router, srv)

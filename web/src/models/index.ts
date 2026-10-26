@@ -1,4 +1,5 @@
 export * from "./currency";
+export * from "./dashboard";
 export * from "./discounts";
 export * from "./forms";
 export * from "./idtypes";

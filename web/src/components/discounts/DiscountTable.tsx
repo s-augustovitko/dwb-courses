@@ -50,7 +50,7 @@ export const DiscountTable: Component<Props> = (props) => (
               <td>{discount.name}</td>
               <td>{discountTypeMap[discount.discountType]}</td>
               <td>{formatDateTime(discount.cutoffDate) || "-"}</td>
-              <td>
+              <td class="no-wrap">
                 {discount.discountType === "MEALS_INCLUDED"
                   ? "Total de comidas"
                   : priceDisplay(discount, props.currencies)}
