@@ -1,13 +1,12 @@
-# 2 GB, 1 vCPU. Leaves about 1 GB for the OS and SQLite's page cache.
-monitor_host: monitor.caminodeldiamante.pe
-# Below the api's --memory, so the GC works harder before the OOM killer
-gomemlimit: 320MiB
-# Memory: about twice the peak measured under a full load test.
-# CPU: --cpu-shares orders who runs first when the vCPU is busy (api first, so
-# its health check never starves). Only the background containers also get a
-# --cpus ceiling: on one vCPU a ceiling on the api or caddy would only throttle them.
+# 512 MB, 1 vCPU (smallest droplet). The ceilings add up to about the RAM;
+# the measured peaks of all of them together leave about 90 MB free, and the
+# swap file absorbs the rest.
+monitor_host: monitor.app.caminodeldiamante.pe
+litestream: false
+# Idle (~70 MB) plus one 64 MiB Argon2id hash
+gomemlimit: 176MiB
 podman_args:
-  api: --memory=384m --cpu-shares=2048
-  caddy: --memory=192m --cpu-shares=1024
-  litestream: --memory=256m --cpus=0.5 --cpu-shares=512
-  dozzle: --memory=96m --cpus=0.25 --cpu-shares=256
+  api: --memory=224m --cpu-shares=2048
+  caddy: --memory=128m --cpu-shares=1024
+  litestream: --memory=96m --cpus=0.5 --cpu-shares=512
+  dozzle: --memory=48m --cpus=0.25 --cpu-shares=256

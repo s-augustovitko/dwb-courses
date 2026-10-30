@@ -9,7 +9,7 @@ cors:
     - https://app.caminodeldiamante.pe
 
 email:
-  from: "no-reply@caminodeldiamante.pe"
+  from: "registro@caminodeldiamante.pe"
   name: "[DWB] Camino del Diamante Perú"
   reply: "contacto@caminodeldiamante.pe"
   link: "https://app.caminodeldiamante.pe"
