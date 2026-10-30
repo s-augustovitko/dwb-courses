@@ -8,13 +8,14 @@ import {
 } from "@modular-forms/solid";
 import { type Component, createSignal, For, Show } from "solid-js";
 import * as v from "valibot";
-import { Accordion, MoneyInput } from "~/components/global";
+import { Accordion, MoneyInput, Switch } from "~/components/global";
 import type {
   Audience,
   PublicCountry,
   PublicForm,
   PublicOption,
 } from "~/models";
+import { PRIVACY_POLICY_URL } from "~/utils";
 import { currenciesFor } from "./audience";
 import { PersonFields } from "./PersonFields";
 import { buildRegistrationPayload, toOverrides } from "./payload";
@@ -23,6 +24,8 @@ import { RegistrationReview } from "./RegistrationReview";
 import { SelectionFields } from "./SelectionFields";
 import { emptyPerson, emptySelection } from "./types";
 import {
+  type ConsentValues,
+  consentSchema,
   type Person,
   type PersonValues,
   personSchema,
@@ -38,6 +41,7 @@ type Props = {
   submitLabel: string;
   /** Staff only: lets the user type a price for each selected session and meal. */
   showOverrides?: boolean;
+  requirePrivacyConsent?: boolean;
   onSubmit: (payload: Record<string, unknown>) => Promise<void>;
   onReviewChange?: (reviewing: boolean) => void;
 };
@@ -58,6 +62,16 @@ export const RegistrationFields: Component<Props> = (props) => {
     validateOn: "change",
     initialValues: emptySelection(currencies()[0]?.code ?? ""),
   });
+
+  const [, { Form: ConsentForm, Field: ConsentField }] =
+    createForm<ConsentValues>({
+      validate: (values) =>
+        valiForm<ConsentValues>(
+          consentSchema(Boolean(props.requirePrivacyConsent)),
+        )(values),
+      validateOn: "change",
+      initialValues: { privacyAccepted: false },
+    });
 
   const [submitting, setSubmitting] = createSignal(false);
   const [review, setReview] = createSignal<{
@@ -194,27 +208,54 @@ export const RegistrationFields: Component<Props> = (props) => {
               person={current().person}
               selection={current().selection}
             />
-            <div class="buttons">
-              <button
-                type="button"
-                class="button is-primary"
-                classList={{ "is-loading": submitting() }}
-                disabled={submitting()}
-                onClick={() =>
-                  handleConfirm(current().person, current().selection)
-                }
-              >
-                {props.submitLabel}
-              </button>
-              <button
-                type="button"
-                class="button"
-                disabled={submitting()}
-                onClick={handleEdit}
-              >
-                Editar
-              </button>
-            </div>
+            <ConsentForm
+              onSubmit={() =>
+                handleConfirm(current().person, current().selection)
+              }
+            >
+              <Show when={props.requirePrivacyConsent}>
+                <ConsentField name="privacyAccepted" type="boolean">
+                  {(field, fieldProps) => (
+                    <Switch
+                      {...fieldProps}
+                      checked={field.value}
+                      error={field.error}
+                      required
+                      label={
+                        <>
+                          Acepto la{" "}
+                          <a
+                            href={PRIVACY_POLICY_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            política de privacidad
+                          </a>
+                        </>
+                      }
+                    />
+                  )}
+                </ConsentField>
+              </Show>
+              <div class="buttons">
+                <button
+                  type="submit"
+                  class="button is-primary"
+                  classList={{ "is-loading": submitting() }}
+                  disabled={submitting()}
+                >
+                  {props.submitLabel}
+                </button>
+                <button
+                  type="button"
+                  class="button"
+                  disabled={submitting()}
+                  onClick={handleEdit}
+                >
+                  Editar
+                </button>
+              </div>
+            </ConsentForm>
           </>
         )}
       </Show>

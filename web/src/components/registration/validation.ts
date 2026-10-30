@@ -231,3 +231,17 @@ export const selectionSchema = (form: PublicForm) =>
 
 export type SelectionValues = v.InferInput<ReturnType<typeof selectionSchema>>;
 export type Selection = v.InferOutput<ReturnType<typeof selectionSchema>>;
+
+export const consentSchema = (required: boolean) =>
+  v.object({
+    // Optional: the switch only renders when consent is required.
+    privacyAccepted: v.pipe(
+      v.optional(v.boolean(), false),
+      v.check(
+        (accepted) => accepted || !required,
+        "Debes aceptar la política de privacidad",
+      ),
+    ),
+  });
+
+export type ConsentValues = v.InferInput<ReturnType<typeof consentSchema>>;

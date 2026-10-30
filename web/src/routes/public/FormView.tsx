@@ -98,6 +98,7 @@ const FormContent: Component<{
               countries={props.countries}
               audience={current()}
               submitLabel="Confirmar y continuar"
+              requirePrivacyConsent
               onSubmit={handleSubmit}
               onReviewChange={setReviewing}
             />

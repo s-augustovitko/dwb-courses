@@ -3,7 +3,7 @@ import "./Switch.css";
 import { type Color, colorClass } from "~/utils";
 
 type Props = {
-  label?: string;
+  label?: JSX.Element;
   hint?: string;
   error?: string;
   color?: Color;
