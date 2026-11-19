@@ -6,8 +6,7 @@ import {
 } from "~/models";
 import type { Color } from "~/utils";
 
-/** A Bulma color; dark adds a fifth color that stays apart from the others. */
-export type ChartColor = Color | "dark";
+export type ChartColor = Exclude<Color, "">;
 
 export type ChartSeries = { name: string; color: ChartColor; values: number[] };
 
@@ -35,13 +34,13 @@ export const STATUS_SERIES = [
   status("PARTIALLY_PAID", "info"),
   status("PAID", "success"),
   status("PARTIALLY_REFUNDED", "link"),
-  status("REFUNDED", "dark"),
+  status("REFUNDED", "danger"),
 ];
 
 export const DIETARY_SERIES: Category<DietaryPreference | "">[] = [
   { key: "REGULAR", name: dietaryLabels.REGULAR, color: "info" },
   { key: "VEGETARIAN", name: dietaryLabels.VEGETARIAN, color: "success" },
-  { key: "", name: "Sin preferencia", color: "warning" },
+  { key: "", name: "Sin comidas", color: "warning" },
 ];
 
 type PivotConfig<Row, Key> = {
@@ -111,10 +110,15 @@ export function pivot<Row, Key>(
   return { labels, groups };
 }
 
-/** Adds the form title when rows span several forms, so equal names stay apart. */
-export function itemLabel(rows: { formTitle: string }[]) {
+/** Adds the date and, when rows span several forms, the form title. */
+export function itemLabel<Row extends { name: string; formTitle: string }>(
+  rows: Row[],
+  dateLabel: (row: Row) => string,
+) {
   const manyForms = new Set(rows.map((row) => row.formTitle)).size > 1;
 
-  return (row: { name: string; formTitle: string }) =>
-    manyForms ? `${row.name} - ${row.formTitle}` : row.name;
+  return (row: Row) =>
+    [dateLabel(row), row.name, manyForms ? row.formTitle : ""]
+      .filter((part) => part.length > 0)
+      .join(" | ");
 }

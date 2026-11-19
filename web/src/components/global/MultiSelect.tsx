@@ -21,6 +21,7 @@ type Props = {
   required?: boolean;
   value?: string[];
   disabled?: boolean;
+  placeholder?: string;
   name: string;
   ref?: (element: HTMLInputElement) => void;
   onInput?: JSX.EventHandler<HTMLInputElement, InputEvent>;
@@ -37,6 +38,7 @@ export const MultiSelect: Component<Props> = (props) => {
     "color",
     "value",
     "required",
+    "placeholder",
   ]);
 
   const [open, setOpen] = createSignal(false);
@@ -106,7 +108,7 @@ export const MultiSelect: Component<Props> = (props) => {
                   </For>
                 ) : (
                   <span class="has-text-grey has-text-weight-normal">
-                    Seleccionar
+                    {props.placeholder ?? "Seleccionar"}
                   </span>
                 )}
               </span>

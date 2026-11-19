@@ -5,6 +5,9 @@ import {
   bar,
   cartesianAxes,
   chart,
+  type Layer,
+  node,
+  type SceneNode,
   stepAxis,
 } from "chartist";
 import "chartist/styles.css";
@@ -44,6 +47,9 @@ const GROUPED_BAR_WIDTH_PX = 20;
 const GROUP_GAP_PX = 4;
 const LABEL_CHAR_PX = 7;
 const MIN_LABEL_CHARS = 6;
+const TOTAL_LABEL_OFFSET_PX = 4;
+const TOTAL_LABEL_LINE_HEIGHT_PX = 14;
+const TOTAL_LABEL_TOP_SPACE_PX = 20;
 
 /** Cuts a label to its column's width; the hover shows it whole. */
 const fitLabel = (label: string, columnWidth: number) => {
@@ -97,6 +103,58 @@ const columnTotal = (group: ChartGroup, labelIndex: number) =>
 
 const formatValue = (group: ChartGroup, value: number) =>
   group.formatValue?.(value) ?? String(value);
+
+/** Room for the total block: one line per group, plus the offset. */
+const totalLabelSpace = (groupCount: number) =>
+  TOTAL_LABEL_TOP_SPACE_PX +
+  Math.max(0, groupCount - 1) * TOTAL_LABEL_LINE_HEIGHT_PX;
+
+/** Draws each column's total above its stack, in the group's own format. */
+const columnTotals = (data: ChartData): Layer => ({
+  type: "column-totals",
+  coordinates: ["cartesian"],
+  series: [],
+  compose: ({ area, axes }) => {
+    const { x, y } = axes;
+    if (!x || !y || data.labels.length === 0) return [];
+
+    const step = x.length / data.labels.length;
+    const labels: SceneNode[] = [];
+
+    data.labels.forEach((_, labelIndex) => {
+      const totals = data.groups
+        .map((group) => ({ group, total: columnTotal(group, labelIndex) }))
+        .filter(({ total }) => total > 0);
+      if (totals.length === 0) return;
+
+      // One block per label (above the tallest column) keeps grouped totals
+      // from overlapping each other on narrow columns.
+      const tallest = Math.max(...totals.map(({ total }) => y.project(total)));
+      const blockTop =
+        area.y1 -
+        tallest -
+        TOTAL_LABEL_OFFSET_PX -
+        (totals.length - 1) * TOTAL_LABEL_LINE_HEIGHT_PX;
+      const center = area.x1 + step * labelIndex + step / 2;
+
+      totals.forEach(({ group, total }, index) => {
+        labels.push(
+          node(
+            "text",
+            {
+              x: center,
+              y: blockTop + index * TOTAL_LABEL_LINE_HEIGHT_PX,
+              "text-anchor": "middle",
+            },
+            "ct-column-total",
+          ).text(formatValue(group, total)),
+        );
+      });
+    });
+
+    return labels;
+  },
+});
 
 const ColumnDetails: Component<{ group: ChartGroup; labelIndex: number }> = (
   props,
@@ -152,10 +210,16 @@ export const StackedBarChart: Component<Props> = (props) => {
           onlyInteger: true,
         },
       ]),
-      layers: [axisGrid(), ...barLayers(props.data), axisLabels()],
+      layers: [
+        axisGrid(),
+        ...barLayers(props.data),
+        columnTotals(props.data),
+        axisLabels(),
+      ],
       className: "ct-chart-bar",
       width: width(),
       height: CHART_HEIGHT,
+      padding: { top: totalLabelSpace(props.data.groups.length) },
     });
 
     onCleanup(() => handle.destroy());

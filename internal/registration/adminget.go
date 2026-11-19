@@ -34,7 +34,8 @@ type staffResponse struct {
 	BalanceCents int64      `json:"balanceCents"`
 	CancelledAt  *time.Time `json:"cancelledAt"`
 
-	PaymentPending bool `json:"paymentPending"`
+	PaymentPending  bool `json:"paymentPending"`
+	DisableDonation bool `json:"disableDonation"`
 
 	FirstName         string `json:"firstName"`
 	LastName          string `json:"lastName"`
@@ -138,6 +139,7 @@ func newStaffResponse(
 		CancelledAt:  nullUnixToTime(sub.CancelledAt),
 		PaymentPending: paymentPending(
 			order.PaymentPendingAt),
+		DisableDonation:             form.DisableDonation,
 		FirstName:                   sub.FirstName,
 		LastName:                    sub.LastName,
 		IDTypeID:                    api.UUIDString(idType.ID),

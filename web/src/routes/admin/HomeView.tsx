@@ -13,7 +13,14 @@ import { fetchAllForms, toFormOption } from "~/components/forms";
 import { MultiSelect } from "~/components/global";
 import { AdminWrapper } from "~/components/layout";
 import { type Dashboard, paymentMethodLabels } from "~/models";
-import { formatCents, Method, request, toggleValue } from "~/utils";
+import {
+  formatCalendarDate,
+  formatCents,
+  formatDateTime,
+  Method,
+  request,
+  toggleValue,
+} from "~/utils";
 
 type Filters = { formIds?: string };
 
@@ -25,19 +32,17 @@ const AdminHomeView: Component = () => {
 
   const [forms] = createResource(fetchAllForms);
 
-  /** The forms in the URL, else the first form of the list. */
-  const formIds = () => {
-    if (params.formIds) return params.formIds.split(",");
+  const formIds = () => (params.formIds ? params.formIds.split(",") : []);
 
-    const first = forms()?.[0];
-    return first ? [first.id] : [];
-  };
-
-  // Waits for the forms so the default form is known before the first fetch.
   const [dashboard] = createResource(
-    () => forms() && { formIds: formIds().join(",") },
+    () => {
+      const ids = formIds();
+      return forms() && ids.length > 0 ? { formIds: ids.join(",") } : undefined;
+    },
     ({ formIds }) => fetchDashboard(formIds),
   );
+
+  const dashboardData = () => (formIds().length > 0 ? dashboard() : undefined);
 
   function handleFormToggle(
     event: Event & { currentTarget: HTMLInputElement },
@@ -59,7 +64,7 @@ const AdminHomeView: Component = () => {
     const rows = dashboard()?.sessions ?? [];
     return pivot(rows, {
       labelKey: (row) => row.sessionId,
-      label: itemLabel(rows),
+      label: itemLabel(rows, (row) => formatDateTime(row.sessionDate, "ddd D")),
       seriesKey: (row) => row.status,
       value: (row) => row.people,
       categories: STATUS_SERIES,
@@ -70,7 +75,9 @@ const AdminHomeView: Component = () => {
     const rows = dashboard()?.meals ?? [];
     return pivot(rows, {
       labelKey: (row) => row.mealId,
-      label: itemLabel(rows),
+      label: itemLabel(rows, (row) =>
+        formatCalendarDate(row.mealDate, "ddd D"),
+      ),
       seriesKey: (row) => row[by],
       value: (row) => row.people,
       categories: by === "status" ? STATUS_SERIES : DIETARY_SERIES,
@@ -106,6 +113,7 @@ const AdminHomeView: Component = () => {
           <MultiSelect
             name="formFilter"
             label="Formularios"
+            placeholder="Selecciona formularios"
             options={(forms() ?? []).map(toFormOption)}
             value={formIds()}
             onChange={handleFormToggle}
@@ -113,7 +121,7 @@ const AdminHomeView: Component = () => {
         </div>
       </div>
 
-      <Show when={dashboard()}>
+      <Show when={dashboardData()}>
         {(data) => (
           <>
             <EarningsBoxes earnings={data().earnings} />

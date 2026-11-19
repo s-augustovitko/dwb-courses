@@ -84,6 +84,8 @@ func (s server) adminRoutes(router fiber.Router) {
 		auth.Guard(s, auth.PermissionWrite, s.AdminUpdatePerson))
 	staff.Put("/:id/items",
 		auth.Guard(s, auth.PermissionWrite, s.AdminEditItems))
+	staff.Put("/:id/donation",
+		auth.Guard(s, auth.PermissionWrite, s.AdminEditDonation))
 	staff.Post("/:id/discounts",
 		auth.Guard(s, auth.PermissionWrite, s.AdminAddDiscount))
 	staff.Delete(
