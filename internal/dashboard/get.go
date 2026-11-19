@@ -32,20 +32,22 @@ type earning struct {
 }
 
 type sessionCount struct {
-	SessionID string `json:"sessionId"`
-	Name      string `json:"name"`
-	FormTitle string `json:"formTitle"`
-	Status    string `json:"status"`
-	People    int64  `json:"people"`
+	SessionID   string    `json:"sessionId"`
+	Name        string    `json:"name"`
+	SessionDate time.Time `json:"sessionDate"`
+	FormTitle   string    `json:"formTitle"`
+	Status      string    `json:"status"`
+	People      int64     `json:"people"`
 }
 
 type mealCount struct {
-	MealID            string `json:"mealId"`
-	Name              string `json:"name"`
-	FormTitle         string `json:"formTitle"`
-	Status            string `json:"status"`
-	DietaryPreference string `json:"dietaryPreference"`
-	People            int64  `json:"people"`
+	MealID            string    `json:"mealId"`
+	Name              string    `json:"name"`
+	MealDate          time.Time `json:"mealDate"`
+	FormTitle         string    `json:"formTitle"`
+	Status            string    `json:"status"`
+	DietaryPreference string    `json:"dietaryPreference"`
+	People            int64     `json:"people"`
 }
 
 type paymentTotal struct {
@@ -198,11 +200,12 @@ func statusCountFromDB(row database.DashboardStatusCountsRow) statusCount {
 
 func sessionCountFromDB(row database.DashboardSessionCountsRow) sessionCount {
 	return sessionCount{
-		SessionID: api.UUIDString(row.SessionID),
-		Name:      row.Name,
-		FormTitle: row.FormTitle,
-		Status:    row.Status,
-		People:    row.People,
+		SessionID:   api.UUIDString(row.SessionID),
+		Name:        row.Name,
+		SessionDate: api.FromUnix(row.SessionDate),
+		FormTitle:   row.FormTitle,
+		Status:      row.Status,
+		People:      row.People,
 	}
 }
 
@@ -210,6 +213,7 @@ func mealCountFromDB(row database.DashboardMealCountsRow) mealCount {
 	return mealCount{
 		MealID:            api.UUIDString(row.MealID),
 		Name:              row.Name,
+		MealDate:          api.FromUnix(row.MealDate),
 		FormTitle:         row.FormTitle,
 		Status:            row.Status,
 		DietaryPreference: row.DietaryPreference.String,

@@ -172,6 +172,7 @@ export type StaffRegistration = Omit<
   phoneNumber: string;
   cancelledAt: string | null;
   balanceCents: number;
+  disableDonation: boolean;
   arrivalDate: string | null;
   departureDate: string | null;
   insuranceProvider: string;

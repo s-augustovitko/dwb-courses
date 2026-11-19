@@ -86,3 +86,10 @@
 .columns > .column {
   min-width: 0;
 }
+
+.ct-column-total {
+  fill: var(--bulma-text-weak);
+  font-size: var(--bulma-size-small);
+  font-weight: 600;
+  pointer-events: none;
+}

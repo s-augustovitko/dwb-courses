@@ -7,6 +7,7 @@ import { OrderTable } from "~/components/registration";
 import {
   CancelModal,
   DiscountModal,
+  DonationModal,
   EditItemsModal,
   EditPersonModal,
   PaymentDetailsModal,
@@ -31,6 +32,7 @@ import {
 type ModalName =
   | "person"
   | "items"
+  | "donation"
   | "discount"
   | "payment"
   | "refund"
@@ -226,6 +228,18 @@ const RegistrationContent: Component<{
                 <IconEdit title="Editar" class="mr-1" decorative />
                 Sesiones y comidas
               </button>
+              <Show
+                when={!props.reg.disableDonation || props.reg.donationCents > 0}
+              >
+                <button
+                  type="button"
+                  class="button"
+                  onClick={() => setModal("donation")}
+                >
+                  <IconEdit title="Editar" class="mr-1" decorative />
+                  Donación
+                </button>
+              </Show>
               <button
                 type="button"
                 class="button"
@@ -287,6 +301,7 @@ const RegistrationContent: Component<{
 
       <EditPersonModal {...modalProps()} open={isOpen("person")} />
       <EditItemsModal {...modalProps()} open={isOpen("items")} />
+      <DonationModal {...modalProps()} open={isOpen("donation")} />
       <DiscountModal {...modalProps()} open={isOpen("discount")} />
       <PaymentModal {...modalProps()} open={isOpen("payment")} />
       <RefundModal {...modalProps()} open={isOpen("refund")} />

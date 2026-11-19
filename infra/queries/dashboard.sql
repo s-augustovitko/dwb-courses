@@ -21,6 +21,7 @@ ORDER BY o.currency_code;
 SELECT
     se.id AS session_id,
     se.name,
+    se.session_date,
     f.title AS form_title,
     o.status,
     COUNT(*) AS people
@@ -42,6 +43,7 @@ ORDER BY se.session_date, se.sort_order, se.id;
 SELECT
     m.id AS meal_id,
     m.name,
+    m.meal_date,
     f.title AS form_title,
     o.status,
     s.dietary_preference,

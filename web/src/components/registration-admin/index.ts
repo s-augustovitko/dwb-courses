@@ -1,5 +1,6 @@
 export * from "./CancelModal";
 export * from "./DiscountModal";
+export * from "./DonationModal";
 export * from "./EditItemsModal";
 export * from "./EditPersonModal";
 export * from "./MoneyTables";

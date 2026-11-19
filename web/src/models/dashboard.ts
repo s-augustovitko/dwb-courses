@@ -18,6 +18,7 @@ export type DashboardStatusCount = {
 export type DashboardSessionCount = {
   sessionId: string;
   name: string;
+  sessionDate: string;
   formTitle: string;
   status: RegistrationStatus;
   people: number;
@@ -26,6 +27,7 @@ export type DashboardSessionCount = {
 export type DashboardMealCount = {
   mealId: string;
   name: string;
+  mealDate: string;
   formTitle: string;
   status: RegistrationStatus;
   /** Empty when the person did not pick one. */
