@@ -23,7 +23,7 @@ import {
 } from "~/components/registration-admin";
 import type { RegistrationList } from "~/models";
 import { useSession } from "~/stores";
-import { Method, request, toggleValue } from "~/utils";
+import { BASE_URL, Method, request, toggleValue } from "~/utils";
 
 const PAGE_SIZE = 50;
 /** The server caps `offset` at 1,000,000. */
@@ -37,14 +37,25 @@ type Filters = { formId?: string; status?: string; q?: string; page?: string };
 const toPage = (raw: string | undefined) =>
   Math.min(Math.max(Math.trunc(Number(raw ?? "0")) || 0, 0), MAX_PAGE);
 
-const fetchRegistrations = (filters: Filters) =>
+const filterQuery = (filters: Filters) => ({
+  ...(filters.formId ? { formId: filters.formId } : {}),
+  ...(filters.status ? { status: filters.status } : {}),
+  ...(filters.q ? { q: filters.q } : {}),
+});
+
+const fetchRegistrationPage = (
+  filters: Filters,
+  limit: number,
+  offset: number,
+) =>
   request<RegistrationList>("registration", Method.GET, {
-    ...(filters.formId ? { formId: filters.formId } : {}),
-    ...(filters.status ? { status: filters.status } : {}),
-    ...(filters.q ? { q: filters.q } : {}),
-    limit: String(PAGE_SIZE),
-    offset: String(toPage(filters.page) * PAGE_SIZE),
+    ...filterQuery(filters),
+    limit: String(limit),
+    offset: String(offset),
   });
+
+const fetchRegistrations = (filters: Filters) =>
+  fetchRegistrationPage(filters, PAGE_SIZE, toPage(filters.page) * PAGE_SIZE);
 
 const AdminRegistrationsView: Component = () => {
   const { canWrite } = useSession();
@@ -64,6 +75,8 @@ const AdminRegistrationsView: Component = () => {
   const statuses = () => (params.status ? params.status.split(",") : []);
   const hasFilters = () => Boolean(params.formId || params.status || params.q);
   const formOptions = () => [ALL_FORMS, ...(forms() ?? []).map(toFormOption)];
+  const exportHref = () =>
+    `${BASE_URL}/registration/export?${new URLSearchParams(filterQuery(params))}`;
 
   // Follows back/forward; our own debounced writes are trimmed, so they already match.
   createEffect(
@@ -123,11 +136,21 @@ const AdminRegistrationsView: Component = () => {
     <AdminWrapper
       title="Inscripciones"
       right={
-        <Show when={canWrite()}>
-          <A class="button is-primary" href="/admin/registrations/new">
-            Nueva inscripción
-          </A>
-        </Show>
+        <div class="buttons">
+          <button
+            type="button"
+            class="button"
+            onClick={() => window.location.assign(exportHref())}
+          >
+            Exportar CSV
+          </button>
+
+          <Show when={canWrite()}>
+            <A class="button is-primary" href="/admin/registrations/new">
+              Nueva inscripción
+            </A>
+          </Show>
+        </div>
       }
     >
       <div class="columns">

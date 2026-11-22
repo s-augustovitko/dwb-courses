@@ -311,3 +311,36 @@ WHERE
     )
 ORDER BY o.created_at DESC, o.id DESC
 LIMIT @page_limit OFFSET @page_offset;
+
+-- name: ExportRegistrations :many
+-- Staff CSV export; same filters as ListRegistrations, without pagination.
+SELECT
+    o.status,
+    o.currency_code,
+    o.created_at,
+    f.title AS form_title,
+    s.first_name,
+    s.last_name,
+    it.label AS id_type_label,
+    s.document_number,
+    t.total_amount_cents,
+    t.amount_paid_cents
+FROM orders o
+JOIN order_totals t ON t.order_id = o.id
+JOIN submissions s ON s.id = o.submission_id
+JOIN forms f ON f.id = s.form_id
+JOIN id_types it ON it.id = s.id_type_id
+WHERE
+    (CAST(sqlc.narg('form_id') AS BLOB) IS NULL OR s.form_id = sqlc.narg('form_id'))
+    AND (
+        (CAST(sqlc.narg('statuses') AS TEXT) IS NULL AND o.status != 'DRAFT')
+        OR instr(',' || sqlc.narg('statuses') || ',', ',' || o.status || ',') > 0
+    )
+    AND (
+        CAST(sqlc.narg('search') AS TEXT) IS NULL
+        OR instr(lower(s.first_name), lower(sqlc.narg('search'))) > 0
+        OR instr(lower(s.last_name), lower(sqlc.narg('search'))) > 0
+        OR instr(lower(s.document_number), lower(sqlc.narg('search'))) > 0
+        OR instr(lower(s.email), lower(sqlc.narg('search'))) > 0
+    )
+ORDER BY o.created_at DESC, o.id DESC;

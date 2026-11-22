@@ -80,36 +80,57 @@ func (s server) AdminList(c fiber.Ctx) error {
 	return api.Success(c, listResponse{Items: items, HasMore: hasMore})
 }
 
-func listRegistrationsArgs(
+type registrationFilters struct {
+	FormID   []byte
+	Statuses sql.NullString
+	Search   sql.NullString
+}
+
+func registrationFiltersFromParams(
 	params listParams,
-	pageSize int64,
-) (database.ListRegistrationsParams, error) {
-	args := database.ListRegistrationsParams{
+) (registrationFilters, error) {
+	filters := registrationFilters{
 		FormID: nil,
 		Statuses: sql.NullString{
 			String: params.Status,
 			Valid:  params.Status != "",
 		},
-		Search:     sql.NullString{String: "", Valid: false},
-		PageLimit:  pageSize + 1,
-		PageOffset: int64(params.Offset),
+		Search: sql.NullString{String: "", Valid: false},
 	}
 
 	if params.FormID != uuid.Nil {
-		args.FormID = params.FormID[:]
+		filters.FormID = params.FormID[:]
 	}
 
-	if args.Statuses.Valid {
+	if filters.Statuses.Valid {
 		if err := checkStatuses(params.Status); err != nil {
-			return args, err
+			return filters, err
 		}
 	}
 
 	if text := strings.TrimSpace(params.Search); text != "" {
-		args.Search = sql.NullString{String: text, Valid: true}
+		filters.Search = sql.NullString{String: text, Valid: true}
 	}
 
-	return args, nil
+	return filters, nil
+}
+
+func listRegistrationsArgs(
+	params listParams,
+	pageSize int64,
+) (database.ListRegistrationsParams, error) {
+	filters, err := registrationFiltersFromParams(params)
+	if err != nil {
+		return database.ListRegistrationsParams{}, err
+	}
+
+	return database.ListRegistrationsParams{
+		FormID:     filters.FormID,
+		Statuses:   filters.Statuses,
+		Search:     filters.Search,
+		PageLimit:  pageSize + 1,
+		PageOffset: int64(params.Offset),
+	}, nil
 }
 
 var orderStatuses = map[string]bool{

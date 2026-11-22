@@ -75,6 +75,8 @@ func (s server) adminRoutes(router fiber.Router) {
 
 	staff.Get("",
 		auth.Guard(s, auth.PermissionRead, s.AdminList))
+	staff.Get("/export",
+		auth.Guard(s, auth.PermissionRead, s.AdminExport))
 	staff.Get("/:id",
 		auth.Guard(s, auth.PermissionRead, s.AdminGet))
 
