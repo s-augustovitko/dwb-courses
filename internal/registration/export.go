@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -26,6 +27,7 @@ var (
 		"Tipo de documento",
 		"Número de documento",
 		"Estado",
+		"Tipo de pago",
 		"Moneda",
 		"Total",
 		"Saldo",
@@ -39,6 +41,15 @@ var (
 		statusPartiallyRefunded: "Reembolso parcial",
 		statusRefunded:          "Reembolsado",
 		statusCancelled:         "Cancelado",
+	}
+	csvPaymentMethodLabels = map[string]string{
+		"ONLINE_PAYMENT": "Pago en línea",
+		"CASH":           "Efectivo",
+		"BANK_TRANSFER":  "Transferencia",
+		"YAPE":           "Yape",
+		"PLIN":           "Plin",
+		methodRefund:     "Reembolso",
+		"OTHER":          "Otro",
 	}
 )
 
@@ -120,6 +131,7 @@ func csvRegistrationRow(row database.ExportRegistrationsRow) []string {
 		row.IDTypeLabel,
 		row.DocumentNumber,
 		csvStatusLabel(row.Status),
+		csvPaymentMethods(row.PaymentMethods),
 		row.CurrencyCode,
 		formatCSVCents(row.TotalAmountCents),
 		formatCSVCents(row.TotalAmountCents - row.AmountPaidCents),
@@ -133,6 +145,21 @@ func csvStatusLabel(status string) string {
 	}
 
 	return status
+}
+
+func csvPaymentMethods(methods string) string {
+	if methods == "" {
+		return ""
+	}
+
+	labels := strings.Split(methods, ",")
+	for i, method := range labels {
+		if label, ok := csvPaymentMethodLabels[method]; ok {
+			labels[i] = label
+		}
+	}
+
+	return strings.Join(labels, ", ")
 }
 
 func formatCSVCents(cents int64) string {

@@ -324,7 +324,12 @@ SELECT
     it.label AS id_type_label,
     s.document_number,
     t.total_amount_cents,
-    t.amount_paid_cents
+    t.amount_paid_cents,
+    CAST(COALESCE((
+        SELECT GROUP_CONCAT(DISTINCT p.method)
+        FROM payments p
+        WHERE p.order_id = o.id
+    ), '') AS TEXT) AS payment_methods
 FROM orders o
 JOIN order_totals t ON t.order_id = o.id
 JOIN submissions s ON s.id = o.submission_id
